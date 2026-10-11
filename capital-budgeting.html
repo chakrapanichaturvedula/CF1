@@ -270,7 +270,7 @@ const S0={n:1,label:'The methods',eyebrow:'Step 1 · The big picture',title:'Six
 /* ================= STEP 5: merits and demerits ================= */
 const SUM=[
  ['d','NPV','NPV > 0',[1,1,1],['Uses all the cash flows and discounts them properly','Measures value added in rupees; values add up across projects'],['Needs a required return','A rupee figure is less intuitive than a percentage'],'Use as the main rule','g'],
- ['d','IRR','IRR > R',[1,1,1],['A single percentage, easy to communicate','Agrees with NPV for one ordinary project'],['Can have several IRRs when signs change twice','Can rank wrongly when projects differ in scale or timing'],'Use with care','a'],
+ ['d','IRR','IRR > R',[1,1,1],['A single percentage, easy to communicate','Agrees with NPV for one ordinary project'],['Cannot tell lending from borrowing','Can have several IRRs when signs change twice','Can rank wrongly when projects differ in scale or timing'],'Use with care','a'],
  ['d','PI','PI > 1',[1,1,1],['Value per rupee: useful when funds are limited','Agrees with NPV for independent projects'],['Can rank wrongly when projects differ in scale'],'Use with care','a'],
  ['d','Discounted payback','DPB < cutoff',[1,0,1],['Accounts for the time value of money','Shows how quickly the cost is recovered'],['Ignores cash flows after the cutoff','The cutoff is arbitrary'],'Quick check only','r'],
  ['n','Payback','PB < cutoff',[1,0,0],['Simple to compute and explain','Favours projects that return cash quickly'],['Ignores the time value of money','Ignores cash flows after the cutoff','The cutoff is arbitrary'],'Quick check only','r']
@@ -347,7 +347,7 @@ const S2={n:3,label:'Payback',eyebrow:'Step 3 · How fast is the money back?',ti
 const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR, Its Problems, and PI',
  sub:'IRR and PI are close cousins of NPV: they use all the cash flows and discount them. For a single ordinary project they agree with NPV. The trouble starts with unusual cash flows and with choosing between projects.',
  state:{R:10},
- spec:(st,id)=>id==='multi'?[['Cash flows','−₹200, ₹200, ₹800, −₹800L','c'],['Signs change','twice','']]:id==='scale'?[['Small','−₹1L, then ₹2L','c'],['Big','−₹1,000L, then ₹1,500L','f'],['Required return',pc(st.R/100,1),'']]:id==='timing'?[['Project A','−₹100, ₹100, ₹10, ₹10L','c'],['Project B','−₹100, ₹10, ₹10, ₹120L','d'],['Required return',pc(st.R/100,1),'']]:[['Cost today','₹200L','d'],['Cash inflows','₹50L, ₹100L, ₹150L','c'],['Required return',pc(st.R/100,1),'']],
+ spec:(st,id)=>id==='lend'?[['A: lending','−₹100L, then +₹130L','c'],['B: borrowing','+₹100L, then −₹130L','d'],['Required return',pc(st.R/100,0),'']]:id==='multi'?[['Cash flows','−₹200, ₹200, ₹800, −₹800L','c'],['Signs change','twice','']]:id==='scale'?[['Small','−₹1L, then ₹2L','c'],['Big','−₹1,000L, then ₹1,500L','f'],['Required return',pc(st.R/100,1),'']]:id==='timing'?[['Project A','−₹100, ₹100, ₹10, ₹10L','c'],['Project B','−₹100, ₹10, ₹10, ₹120L','d'],['Required return',pc(st.R/100,1),'']]:[['Cost today','₹200L','d'],['Cash inflows','₹50L, ₹100L, ₹150L','c'],['Required return',pc(st.R/100,1),'']],
  tabs:[
  {id:'irr',name:'Internal rate of return',short:'The rate where NPV = 0',
   def:'IRR is the discount rate that makes NPV exactly zero: the project\'s own rate of return. Accept the project if its IRR is above the required return.',
@@ -357,6 +357,21 @@ const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR
    profile(s,k,[{c:P,col:k.a,name:'NPV'}],{rmin:0,rmax:0.44,ymin:-80,ymax:120,ytick:40,R,marks:[[0.16,npv(P,.16),k.m,'16%: ₹13.52L',-12,'end'],[0.2,npv(P,.2),k.m,'20%: −₹2.08L',22,'start'],[IRRP,0,k.f,'IRR '+pc(IRRP),-14,'start']]});
    return {legend:[[k.a,'NPV at each rate'],[k.f,'IRR']],
     work:`<div class="fm">0 = −₹200L + ₹50L ÷ (1+IRR) + ₹100L ÷ (1+IRR)² + ₹150L ÷ (1+IRR)³</div><div class="k">Interpolate between 16% and 20%</div><div>IRR ≈ 16% + 4% × 13.52 ÷ (13.52 + 2.08) = 19.47%</div><div class="big">IRR = ${pc(IRRP)}</div>`+note(`${pc(IRRP)} ${IRRP>R?'>':'<'} ${pc(R,1)}, so ${IRRP>R?'accept':'reject'}. NPV agrees: ${L(N)}.`)}}},
+ {id:'lend',name:'Lending or borrowing?',short:'Same IRR, opposite answers',
+  def:'Project A: you pay ₹100 lakh today and get ₹130 lakh next year, like lending money. Project B: you receive ₹100 lakh today and pay ₹130 lakh next year, like borrowing. Both have an IRR of 30%.',
+  contrast:'IRR is 30% for both, so "accept if IRR > R" says take both. But a lender wants a high rate and a borrower wants a low one: for B the rule flips to accept if IRR < R. NPV needs no flipping: it is positive for A and negative for B whenever R is below 30%.',
+  ctl:[{key:'R',label:'Required return',min:0,max:60,step:1,fmt:v=>v.toFixed(0)+'%',note:'Cross 30% and both NPVs change sign.'}],
+  draw(s,st){const k=K(),R=st.R/100,LA=[-100,130],LB=[100,-130],nA=npv(LA,R),nB=npv(LB,R),CX=[230,400];
+   ['Today','Year 1'].forEach((t,i)=>T(s,CX[i],14,t,{bold:1,fill:k.ink,size:12}));T(s,620,14,`NPV at ${pc(R,0)}`,{bold:1,fill:k.ink,size:12});
+   [[LA,k.a,'A: lending',40,nA,'you pay','you get'],[LB,k.d,'B: borrowing',100,nB,'you get','you pay']].forEach(([c,col,nm,y,n,w0,w1])=>{
+    T(s,24,y+5,nm,{anchor:'start',bold:1,fill:col,size:13});
+    c.forEach((v,i)=>{const pos=v>0;Rc(s,CX[i]-50,y-14,100,26,pos?col:k.fa,{stroke:pos?col:k.l,rx:6});T(s,CX[i],y+4,(pos?'+':'')+L0(v),{mono:1,bold:1,size:12,fill:pos?k.surf:k.ink});T(s,CX[i],y+28,i?w1:w0,{size:11})});
+    T(s,CX[0]+70,y+4,'→',{size:16,fill:k.m});T(s,620,y+5,L(n),{mono:1,bold:1,size:14,fill:n>=0?k.par:k.d})});
+   Ln(s,24,140,736,140,k.l,1);
+   profile(s,k,[{c:LA,col:k.a,name:'A: lending'},{c:LB,col:k.d,name:'B: borrowing'}],{rmin:0,rmax:0.6,ymin:-40,ymax:40,ytick:20,xtick:0.1,R,top:158,base:286,marks:[[0.3,0,k.f,'IRR = 30% for both',24,'start']]});
+   const okA=nA>=0,okB=nB>=0;
+   return {legend:[[k.a,'A: lending, NPV falls as R rises'],[k.d,'B: borrowing, NPV rises as R rises'],[k.f,'Same IRR']],
+    work:`<div>IRR: A <span class="c">30%</span> · B <span style="color:var(--disc)">30%</span></div><div>NPV at ${pc(R,0)}: A <span style="color:var(${okA?'--par':'--disc'})">${L(nA)}</span> · B <span style="color:var(${okB?'--par':'--disc'})">${L(nB)}</span></div><div class="big">NPV: ${okA?'take A':'reject A'}, ${okB?'take B':'reject B'}</div>`+note(`IRR alone cannot tell you which one to take. You must first ask: am I lending (accept if IRR > R) or borrowing (accept if IRR < R)?`)}}},
  {id:'multi',name:'Multiple IRRs',short:'When signs change twice',
   def:'This project has a cost, two inflows and then a large outflow at the end, such as a clean-up cost. The cash-flow signs change twice, so NPV crosses zero twice.',
   contrast:'Two IRRs, 0% and 100%, and neither tells you what to do. NPV still gives one clear answer at your required return. The modified IRR fixes the problem by discounting the outflows and compounding the inflows at chosen rates.',ctl:[],
@@ -377,11 +392,19 @@ const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR
    return {legend:[[k.a,'Small project'],[k.f,'Big project']],
     work:`<div>Small: IRR 100%, NPV = ₹2L ÷ ${(1+R).toFixed(3)} − ₹1L = <span class="c">${L(nS)}</span></div><div>Big: IRR 50%, NPV = ₹1,500L ÷ ${(1+R).toFixed(3)} − ₹1,000L = <span class="f">${L(nB)}</span></div>`+note('Only one can be taken. Big adds more value at any required return below 50%.')}}},
  {id:'timing',name:'The timing problem',short:'Early cash or late cash?',
-  def:'Two mutually exclusive projects with the same cost. A returns most of its cash in year 1; B returns most of it in year 3. Their NPV profiles cross.',
+  def:'Two mutually exclusive projects, both costing ₹100 lakh. A returns most of its cash in year 1 (₹100L); B returns most of it in year 3 (₹120L). Which is better depends on how heavily we discount the late cash.',
   contrast:'IRR always picks A (16.04% against 12.94%). NPV picks B below the crossover rate of 10.55%, because late cash is worth more when discounting is light. Find the crossover as the IRR of the difference, A − B.',
   ctl:[{key:'R',label:'Required return',min:0,max:30,step:0.5,fmt:v=>v.toFixed(1)+'%',note:'Slide across 10.55% and watch the winner switch.'}],
   draw(s,st){const k=K(),R=st.R/100,nA=npv(TA,R),nB=npv(TB,R),cr=irr([0,90,0,-110],0.01,1);
-   profile(s,k,[{c:TA,col:k.a,name:'Project A'},{c:TB,col:k.d,name:'Project B'}],{rmin:0,rmax:0.3,ymin:-30,ymax:60,ytick:15,xtick:0.05,R,marks:[[cr,npv(TA,cr),k.ink,'crossover '+pc(cr),-12,'start'],[irr(TA),0,k.a,'IRR A '+pc(irr(TA)),18,'start'],[irr(TB),0,k.d,'IRR B '+pc(irr(TB)),18,'end']]});
+   const CX=[200,330,460,590],hb=v=>Math.abs(v)*0.3;
+   ['Today','Year 1','Year 2','Year 3'].forEach((t,i)=>T(s,CX[i],14,t,{bold:1,fill:k.ink,size:12}));T(s,690,14,`NPV at ${pc(R,1)}`,{bold:1,fill:k.ink,size:12});
+   [[TA,k.a,'A: early cash',62,nA],[TB,k.d,'B: late cash',122,nB]].forEach(([c,col,nm,y,n])=>{
+    T(s,24,y-8,nm,{anchor:'start',bold:1,fill:col,size:13});Ln(s,150,y,640,y,k.l,1);
+    c.forEach((v,i)=>{if(v<0){Rc(s,CX[i]-30,y-20,60,20,k.fa,{stroke:k.l,rx:4});T(s,CX[i],y-6,L0(v),{mono:1,bold:1,size:11,fill:k.ink});return}
+     Rc(s,CX[i]-18,y-hb(v),36,hb(v),col,{rx:2,op:v>=100?1:.55});T(s,CX[i],y-hb(v)-5,L0(v),{mono:1,bold:1,size:11,fill:k.ink})});
+    T(s,690,y-6,L(n),{mono:1,bold:1,size:13,fill:n>=Math.max(nA,nB)?col:k.m})});
+   Ln(s,24,138,736,138,k.l,1);
+   profile(s,k,[{c:TA,col:k.a,name:'Project A'},{c:TB,col:k.d,name:'Project B'}],{rmin:0,rmax:0.3,ymin:-30,ymax:60,ytick:30,xtick:0.05,R,top:156,base:286,marks:[[cr,npv(TA,cr),k.ink,'crossover '+pc(cr),-12,'start'],[irr(TA),0,k.a,'IRR A '+pc(irr(TA)),18,'start'],[irr(TB),0,k.d,'IRR B '+pc(irr(TB)),18,'end']]});
    const w=nA>nB?'A':'B';
    return {legend:[[k.a,'Project A: early cash'],[k.d,'Project B: late cash']],
     work:`<div>NPV at ${pc(R,1)}: A <span class="c">${L(nA)}</span> · B <span style="color:var(--disc)">${L(nB)}</span></div><div class="big">NPV picks ${w}</div><div>IRR picks A every time</div><div class="k">Crossover: IRR of A − B</div><div>A − B = 0, ₹90L, ₹0L, −₹110L → ${pc(cr)}</div>`}}},
