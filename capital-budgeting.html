@@ -140,6 +140,10 @@ svg text.mono{font-family:var(--mono)}
 @media (max-width:900px){.stepper{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:640px){.stepper{grid-template-columns:1fr 1fr}}
 @media (min-width:821px){.index.desk-hide{display:none}}
+.work .prop{border:2px solid var(--accent);border-radius:10px;padding:10px 12px;margin:6px 0;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.work .prop .ph{font-family:var(--body);font-size:14px;font-weight:600;color:var(--accent)}
+.work .prop .pr{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1.3fr);align-items:center;gap:6px;font-size:14px}
+.work .prop .pr i{font-style:normal;color:var(--accent);text-align:center;font-size:20px;font-family:var(--body)}
 </style>
 <style>
 body{margin:0}
@@ -439,7 +443,10 @@ const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR
    const br=(a,b,yy,col,lab)=>{Ln(s,X(a),yy,X(b),yy,col,2);Ln(s,X(a),yy-6,X(a),yy+6,col,2);Ln(s,X(b),yy-6,X(b),yy+6,col,2);if(X(b)-X(a)<110){T(s,X(a)-10,yy+4,lab,{anchor:'end',mono:1,bold:1,size:12,fill:col});return}Rc(s,(X(a)+X(b))/2-44,yy-9,88,18,k.surf,{rx:3});T(s,(X(a)+X(b))/2,yy+4,lab,{mono:1,bold:1,size:12,fill:col})};
    br(N2,0,252,k.d,Math.abs(N2).toFixed(2));br(0,N1,252,k.par,N1.toFixed(2));br(N2,N1,290,k.ink,'total '+gap.toFixed(2));
    return {legend:[[k.par,'NPV at 16%: distance to zero'],[k.d,'NPV at 20%: distance to zero'],[k.ink,'Total distance']],
-    work:`<div>Total distance = ${N1.toFixed(2)} + ${Math.abs(N2).toFixed(2)} = <b>${gap.toFixed(2)}</b></div><div class="k">From 16%, add</div><div>IRR ≈ 16% + 4% × <span style="color:var(--par)">${N1.toFixed(2)}</span> ÷ ${gap.toFixed(2)}</div><div>= 16% + ${pc(est-r1)} = <span class="c">${pc(est)}</span></div><div class="k">Check from 20%, subtract</div><div>20% − 4% × <span style="color:var(--disc)">${Math.abs(N2).toFixed(2)}</span> ÷ ${gap.toFixed(2)} = ${pc(est)}</div><div class="big">IRR ≈ ${pc(est)}</div>`+note('4% is the gap between the two trial rates, 20% − 16%.')}}}
+    work:`<div>Total distance = ${N1.toFixed(2)} + ${Math.abs(N2).toFixed(2)} = <b>${gap.toFixed(2)}</b></div><div class="prop"><div class="ph">If a distance of ${gap.toFixed(2)} is 4%, how much is ${N1.toFixed(2)}?</div>
+<div class="pr"><span>Total distance <b>${gap.toFixed(2)}</b></span><i>↔</i><span><b>4%</b> (20% − 16%)</span></div>
+<div class="pr"><span>16% to zero <b style="color:var(--par)">${N1.toFixed(2)}</b></span><i>↔</i><span><b>?</b> = 4% × ${N1.toFixed(2)} ÷ ${gap.toFixed(2)} = <b class="c">${pc(est-r1)}</b></span></div></div>
+<div class="k">So, from 16%, add</div><div>IRR ≈ 16% + ${pc(est-r1)} = <span class="c">${pc(est)}</span></div><div class="k">Check from 20%, subtract</div><div>20% − 4% × <span style="color:var(--disc)">${Math.abs(N2).toFixed(2)}</span> ÷ ${gap.toFixed(2)} = ${pc(est)}</div><div class="big">IRR ≈ ${pc(est)}</div>`}}}
  ]};
 
 const STEPS=[S0,S1,S2,S3,S5];
