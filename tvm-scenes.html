@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Time Value of Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a scroll of seven scenes, each a short story with one thing to play with and a closing "idea" card. Sticky scene bar on top. Same palette and type as the bond walkthrough. */
+:root{
+  --bg:#F4F4F1; --surface:#FFFFFF; --ink:#16223A; --muted:#5B6578; --line:#DADDD8; --faint:#E7E8E3;
+  --accent:#6B3FA0; --accent-soft:#EEE6F7; --face:#0F6E8C; --face-soft:#DCEEF3;
+  --gold:#B7791F; --gold-soft:#FBF0DC; --good:#2F6B3F; --good-soft:#E2F0E5; --bad:#B4530F; --bad-soft:#FBEADC;
+  --display:'Source Serif 4', Georgia, serif; --body:'IBM Plex Sans','Segoe UI',Arial,sans-serif; --mono:'IBM Plex Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12131A; --surface:#1C1E29; --ink:#ECEDF2; --muted:#A1A6B8; --line:#2F3242; --faint:#262938;
+  --accent:#B794E6; --accent-soft:#2E2340; --face:#5BB8D4; --face-soft:#16384A;
+  --gold:#E2B65A; --gold-soft:#3A2F17; --good:#86C998; --good-soft:#1C3824; --bad:#F0A266; --bad-soft:#43291A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12131A; --surface:#1C1E29; --ink:#ECEDF2; --muted:#A1A6B8; --line:#2F3242; --faint:#262938;
+  --accent:#B794E6; --accent-soft:#2E2340; --face:#5BB8D4; --face-soft:#16384A;
+  --gold:#E2B65A; --gold-soft:#3A2F17; --good:#86C998; --good-soft:#1C3824; --bad:#F0A266; --bad-soft:#43291A; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:20px;padding-block:0 60px}
+.wrap{max-width:1080px;margin:0 auto}
+.hero{padding-block:40px 18px;display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:0}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5.5vw,58px);line-height:1;margin:0;text-wrap:balance}
+.hero p{margin:0;color:var(--muted);font-size:18px;max-width:60ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-inline:-20px;padding:10px 20px}
+.bar .wrap{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.bar a{flex:0 0 auto;text-decoration:none;color:var(--muted);font-size:14px;font-weight:500;padding:6px 12px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.bar a b{font-family:var(--mono);font-weight:500;margin-right:6px;color:var(--accent)}
+.bar a.on{background:var(--surface);border-color:var(--accent);color:var(--ink)}
+.scene{margin-top:34px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:18px;scroll-margin-top:70px}
+.tag{display:inline-block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px}
+.scene h2{font-family:var(--display);font-size:clamp(26px,3.6vw,36px);margin:8px 0 4px;line-height:1.1;text-wrap:balance}
+.story{margin:0;color:var(--muted);font-size:17px;max-width:68ch}
+.story b{color:var(--ink)}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--body);font-size:13px;fill:var(--muted)}
+svg .mono{font-family:var(--mono)}
+.controls{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end}
+.sl{display:flex;flex-direction:column;gap:4px;flex:1 1 200px;min-width:0}
+.sl label{display:flex;justify-content:space-between;font-weight:500;font-size:15px}
+.sl output{font-family:var(--mono);color:var(--accent)}
+.sl input{width:100%;accent-color:var(--accent)}
+.btn{font:600 15px var(--body);padding:10px 20px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.stat{background:var(--bg);border-radius:12px;padding:12px 14px}
+.stat span{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stat b{font-family:var(--mono);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+.idea{border-radius:14px;background:var(--accent-soft);padding:16px 18px;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:6px 22px;align-items:center}
+.idea .k{grid-column:1/-1;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.idea .fm{font-family:var(--mono);font-size:18px;color:var(--ink);white-space:nowrap;overflow-x:auto}
+.idea p{margin:0;font-size:15px;color:var(--ink)}
+.guess{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.guess .q{font-weight:600;margin-right:6px}
+.chip{font:500 15px var(--mono);padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.chip.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.chip.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.chip.pick{border-color:var(--accent);background:var(--accent-soft)}
+.msg{margin:0;font-size:16px;min-height:1.5em}
+.msg.good{color:var(--good)} .msg.bad{color:var(--bad)}
+.two{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:center}
+.offers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.offer{font:inherit;text-align:left;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.offer .bank{font-family:var(--display);font-weight:700;font-size:20px}
+.offer .q{font-family:var(--mono);font-size:15px}
+.offer .e{font-family:var(--mono);font-size:22px;color:var(--accent);min-height:1.4em}
+.offer.best{border-color:var(--good);background:var(--good-soft)}
+.offer.pick{border-color:var(--accent)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg)}
+.seg button{font:500 14px var(--body);border:none;background:transparent;color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--accent);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.big{font-family:var(--mono);font-size:clamp(30px,5vw,46px);line-height:1.05;font-variant-numeric:tabular-nums}
+.end{margin-top:34px;text-align:center;color:var(--muted)}
+@media (max-width:760px){.scene{padding:18px}.two,.offers{grid-template-columns:1fr}.idea{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+<style>
+body{margin:0}
+.homebar{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1120px;margin:0 auto;padding:14px 0 0;font-family:'IBM Plex Sans','Segoe UI',Arial,sans-serif;font-size:14px}
+.homebar a{color:var(--accent,#6B3FA0);text-decoration:none;font-weight:600}
+.homebar a:hover{text-decoration:underline}
+.homebar span{color:var(--muted,#5B6578)}
+</style>
+<nav class="homebar" aria-label="Site"><a href="index.html">← All FIA 203 topics</a><span>FIA 203 Corporate Finance</span></nav>
+
+
+<div class="wrap hero">
+  <p class="eyebrow">Corporate Finance · Chapter</p>
+  <h1>Time Value of Money</h1>
+  <p>A rupee today is not the same as a rupee tomorrow. Seven short scenes, each with something to play with.</p>
+</div>
+<nav class="bar" aria-label="Scenes"><div class="wrap" id="nav"></div></nav>
+
+<div class="wrap">
+
+<!-- 1 FV -->
+<section class="scene" id="sc1" data-nav="Future value">
+  <div><span class="tag">1 · Future value</span><h2>The snowball</h2>
+  <p class="story">Your grandmother puts <b>₹1,00,000</b> in a deposit the day you are born and forgets about it. Two banks: one pays <b>simple interest</b>, the other <b>compounds</b>. Race them for 30 years.</p></div>
+  <div class="guess" id="g1"><span class="q">Guess first: at 10%, what does the compounding deposit hold at age 30?</span></div>
+  <svg id="c1" viewBox="0 0 760 340" role="img" aria-label="Simple versus compound growth over 30 years"></svg>
+  <div class="controls">
+    <button class="btn" id="p1">▶ Race 30 years</button>
+    <div class="sl"><label for="r1">Interest rate <output id="r1o"></output></label><input id="r1" type="range" min="1" max="15" step="0.5" value="10"></div>
+    <div class="sl"><label for="t1">Year <output id="t1o"></output></label><input id="t1" type="range" min="0" max="30" step="1" value="30"></div>
+  </div>
+  <div class="stats" id="s1"></div>
+  <div class="idea"><div class="k">The idea</div><div class="fm">FV = PV × (1 + r)ⁿ</div><p>Compounding pays interest on interest, so growth speeds up every year. The flags show the money doubling roughly every 72 ÷ r years: the rule of 72.</p></div>
+</section>
+
+<!-- 2 PV -->
+<section class="scene" id="sc2" data-nav="Present value">
+  <div><span class="tag">2 · Present value</span><h2>The balance scale</h2>
+  <p class="story">You win a contest. Take <b>₹1,00,000 today</b>, or <b>₹1,50,000 in five years</b>. Which is worth more? Pick one, then let the scale decide.</p></div>
+  <div class="guess" id="g2"><span class="q">Your pick:</span><button class="chip" data-c="A">₹1,00,000 today</button><button class="chip" data-c="B">₹1,50,000 in 5 years</button></div>
+  <svg id="c2" viewBox="0 0 760 300" role="img" aria-label="Balance scale comparing money today with money in five years"></svg>
+  <div class="controls"><div class="sl"><label for="r2">Interest rate you could earn <output id="r2o"></output></label><input id="r2" type="range" min="0" max="20" step="0.5" value="10"></div></div>
+  <p class="msg" id="m2"></p>
+  <div class="idea"><div class="k">The idea</div><div class="fm">PV = FV ÷ (1 + r)ⁿ</div><p>To compare money at different dates, bring it to the same date. The answer flips at <b id="be2"></b>: below that rate, waiting pays.</p></div>
+</section>
+
+<!-- 3 FV annuity -->
+<section class="scene" id="sc3" data-nav="Annuity FV">
+  <div><span class="tag">3 · Future value of an annuity</span><h2>The SIP jar</h2>
+  <p class="story">From your first job you drop <b>₹50,000</b> into a jar at the end of every year. Each year's money keeps growing for the years that remain. Watch the old layers swell.</p></div>
+  <div class="two">
+    <svg id="c3" viewBox="0 0 420 360" role="img" aria-label="Jar filling with yearly contributions"></svg>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="stats" id="s3" style="grid-template-columns:1fr 1fr"></div>
+      <svg id="c3b" viewBox="0 0 400 56" role="img" aria-label="Share of the jar that is your money versus growth"></svg>
+      <div class="controls" style="flex-direction:column;align-items:stretch">
+        <button class="btn" id="p3" style="align-self:flex-start">▶ Fill the jar</button>
+        <div class="sl"><label for="r3">Return <output id="r3o"></output></label><input id="r3" type="range" min="1" max="15" step="0.5" value="12"></div>
+        <div class="sl"><label for="n3">Years of saving <output id="n3o"></output></label><input id="n3" type="range" min="5" max="30" step="1" value="20"></div>
+      </div>
+    </div>
+  </div>
+  <div class="idea"><div class="k">The idea</div><div class="fm">FV = C × [(1 + r)ⁿ − 1] ÷ r</div><p>Each payment grows for a different number of years. The formula adds them all up in one step. The longer you save, the more of the jar is growth rather than your own money.</p></div>
+</section>
+
+<!-- 4 PV annuity -->
+<section class="scene" id="sc4" data-nav="Annuity PV">
+  <div><span class="tag">4 · Present value of an annuity</span><h2>How big a loan can you take?</h2>
+  <p class="story">You can afford <b>₹2,40,000 a year</b> (₹20,000 a month) in repayments. The bank charges <b>9%</b>. The loan the bank will give you today is the value of those future payments, brought back to today.</p></div>
+  <svg id="c4" viewBox="0 0 760 320" role="img" aria-label="Yearly repayments pulled back to today"></svg>
+  <div class="controls">
+    <button class="btn" id="p4">⟲ Bring the payments to today</button>
+    <div class="sl"><label for="r4">Loan rate <output id="r4o"></output></label><input id="r4" type="range" min="5" max="15" step="0.5" value="9"></div>
+    <div class="sl"><label for="n4">Years to repay <output id="n4o"></output></label><input id="n4" type="range" min="3" max="20" step="1" value="10"></div>
+  </div>
+  <div class="stats" id="s4"></div>
+  <div class="idea"><div class="k">The idea</div><div class="fm">PV = C × [1 − (1 + r)⁻ⁿ] ÷ r</div><p>Each repayment is worth less today the later it comes. The loan amount is the sum of those shrunken payments. Everything you repay above it is interest.</p></div>
+</section>
+
+<!-- 5 perpetuity -->
+<section class="scene" id="sc5" data-nav="Perpetuity">
+  <div><span class="tag">5 · Perpetuity</span><h2>A scholarship forever</h2>
+  <p class="story">An alumna wants to fund a <b>₹1,00,000 scholarship every year, forever</b>. How much must she give today? Infinite payments, but watch the total stop growing.</p></div>
+  <svg id="c5" viewBox="0 0 760 320" role="img" aria-label="Running total of present values approaching a ceiling"></svg>
+  <div class="controls">
+    <button class="btn" id="p5">▶ Count the years</button>
+    <div class="sl"><label for="r5">Interest rate <output id="r5o"></output></label><input id="r5" type="range" min="2" max="15" step="0.5" value="8"></div>
+  </div>
+  <div class="stats" id="s5"></div>
+  <div class="idea"><div class="k">The idea</div><div class="fm">PV = C ÷ r</div><p>Far-off payments are worth almost nothing today, so the running total levels off. If she invests C ÷ r at rate r, the interest alone pays the scholarship every year and the gift is never used up.</p></div>
+</section>
+
+<!-- 6 growth -->
+<section class="scene" id="sc6" data-nav="Growth">
+  <div><span class="tag">6 · Growing annuity and perpetuity</span><h2>Keeping up with inflation</h2>
+  <p class="story">The scholarship should rise every year so it keeps its value. The fund earns <b>8%</b>. Push the growth rate up and watch what the gift has to be.</p></div>
+  <div class="controls" style="align-items:center">
+    <div class="seg" id="mode6" role="group" aria-label="How long"><button data-m="ann" class="on">For 20 years</button><button data-m="perp">Forever</button></div>
+    <div class="sl"><label for="g6">Growth rate of the scholarship <output id="g6o"></output></label><input id="g6" type="range" min="0" max="12" step="0.5" value="4"></div>
+  </div>
+  <svg id="c6m" viewBox="0 0 760 70" role="img" aria-label="Growth rate compared with the interest rate"></svg>
+  <svg id="c6" viewBox="0 0 760 260" role="img" aria-label="Growing payments and their value today"></svg>
+  <div class="stats" id="s6"></div>
+  <div class="idea"><div class="k">The idea</div><div class="fm" id="f6"></div><p id="t6"></p></div>
+</section>
+
+<!-- 7 APR / EAR -->
+<section class="scene" id="sc7" data-nav="APR vs EAR">
+  <div><span class="tag">7 · APR and EAR</span><h2>Which bank pays more?</h2>
+  <p class="story">Three banks want your ₹1,00,000 fixed deposit. Each quotes an annual rate (APR) but adds interest at different intervals. <b>Pick the one that pays you most.</b></p></div>
+  <div class="offers" id="o7"></div>
+  <p class="msg" id="m7"></p>
+  <div class="two" style="margin-top:6px">
+    <svg id="c7" viewBox="0 0 360 300" role="img" aria-label="A year sliced into compounding periods"></svg>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div><div class="stat" style="background:transparent;padding:0"><span>Effective annual rate</span></div><div class="big" id="e7"></div><p class="msg" id="d7" style="color:var(--muted);font-size:15px"></p></div>
+      <div class="sl"><label for="a7">APR <output id="a7o"></output></label><input id="a7" type="range" min="1" max="40" step="1" value="12"></div>
+      <div class="sl"><label for="m7s">Interest added <output id="m7o"></output></label><input id="m7s" type="range" min="0" max="6" step="1" value="3"></div>
+    </div>
+  </div>
+  <div class="idea"><div class="k">The idea</div><div class="fm">EAR = (1 + APR ÷ m)ᵐ − 1</div><p>The more often interest is added, the more interest earns interest. Compare offers by EAR, never by APR. Try a 36% credit-card APR added monthly.</p></div>
+</section>
+
+<p class="end">Seven ideas, one rule: move money to the same date before you compare it.</p>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const inr=v=>'₹'+Math.round(v).toLocaleString('en-IN');
+const inr2=v=>'₹'+v.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS='http://www.w3.org/2000/svg';
+const el=(t,a,x)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;return e};
+const T=(s,x,y,t,o={})=>s.append(el('text',{x,y,'text-anchor':o.a||'middle',class:o.mono?'mono':'',style:`fill:${o.f||css('--muted')};${o.b?'font-weight:600;':''}${o.sz?'font-size:'+o.sz+'px;':''}`},t));
+const Rc=(s,x,y,w,h,fill,o={})=>{if(h<=0||w<=0)return;s.append(el('rect',{x,y,width:w,height:h,fill,rx:o.rx??3,...(o.st?{stroke:o.st,'stroke-width':o.sw||1}:{}),...(o.op!=null?{opacity:o.op}:{})}))};
+const Ln=(s,x1,y1,x2,y2,st,w=1,op)=>s.append(el('line',{x1,y1,x2,y2,stroke:st,'stroke-width':w,...(op!=null?{opacity:op}:{})}));
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function anim(ms,step,done){if(reduce){step(1);done&&done();return()=>{}}let t0=null,stop=false;
+  const f=ts=>{if(stop)return;t0??=ts;const p=Math.min(1,(ts-t0)/ms);step(p);p<1?requestAnimationFrame(f):done&&done()};requestAnimationFrame(f);return()=>{stop=true}}
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const slider=(id,fmt,cb)=>{const i=$(id),o=$(id+'o');const u=()=>{o.textContent=fmt(+i.value);cb(+i.value)};i.addEventListener('input',u);o.textContent=fmt(+i.value);return i};
+const redraws=[];
+
+/* nav */
+const nav=$('nav');document.querySelectorAll('.scene').forEach((s,i)=>{const a=document.createElement('a');a.href='#'+s.id;a.innerHTML=`<b>${i+1}</b>${s.dataset.nav}`;nav.append(a)});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){nav.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('.scene').forEach(s=>io.observe(s));
+
+/* ===== 1 Snowball ===== */
+(()=>{const P=100000,H=30;let r=10,t=30,stopA=null;
+ const fv=(r,t)=>P*Math.pow(1+r/100,t);
+ const g=$('g1');const opts=[400000,1000000,1744940,3000000];
+ opts.forEach(v=>{const b=document.createElement('button');b.className='chip';b.textContent=inr(v);b.addEventListener('click',()=>{
+   g.querySelectorAll('.chip').forEach(c=>c.classList.remove('pick','right','wrong'));b.classList.add('pick');$('r1').value=10;r=10;$('r1o').textContent='10.0%';play(()=>{
+     g.querySelectorAll('.chip').forEach((c,i)=>{if(opts[i]===1744940)c.classList.add('right');else if(c===b)c.classList.add('wrong')});
+     let m=g.querySelector('.res');if(!m){m=document.createElement('span');m.className='res';m.style.cssText='font-size:15px;margin-left:6px';g.append(m)}
+     m.textContent=v===1744940?'Spot on. Most people guess far lower.':`It ends at ₹17,44,940. Simple interest would give only ₹4,00,000.`;})});g.append(b)});
+ const draw=()=>{const s=$('c1');s.innerHTML='';const W=760,L=78,R=176,top=24,base=300,pw=W-L-R,ph=base-top;
+  const ymax=fv(r,H)*1.08,X=y=>L+pw*y/H,Y=v=>base-ph*v/ymax;
+  const step=ymax>2e6?(ymax>6e6?2e6:5e5):ymax>8e5?2e5:1e5;
+  for(let v=0;v<=ymax;v+=step){Ln(s,L,Y(v),L+pw,Y(v),css('--line'));T(s,L-8,Y(v)+4,v>=1e5?'₹'+(v/1e5).toFixed(v%1e5?1:0)+'L':inr(v),{a:'end',sz:12})}
+  [0,5,10,15,20,25,30].forEach(y=>T(s,X(y),base+20,y?'Age '+y:'Birth',{sz:12}));
+  const pts=f=>{const a=[];for(let y=0;y<=t+1e-9;y+=0.25)a.push([y,f(Math.min(y,t))]);if(a[a.length-1][0]<t)a.push([t,f(t)]);return a};
+  const area=(up,lo,fill,op)=>{const U=pts(up),D=pts(lo).reverse();s.append(el('polygon',{points:U.concat(D).map(([y,v])=>X(y)+','+Y(v)).join(' '),fill,opacity:op??1}))};
+  const simple=y=>P*(1+r/100*y),comp=y=>fv(r,y);
+  area(()=>P,()=>0,css('--face'));area(simple,()=>P,css('--accent'),.85);area(comp,simple,css('--gold'),.85);
+  s.append(el('polyline',{points:pts(comp).map(([y,v])=>X(y)+','+Y(v)).join(' '),fill:'none',stroke:css('--gold'),'stroke-width':3}));
+  s.append(el('polyline',{points:pts(simple).map(([y,v])=>X(y)+','+Y(v)).join(' '),fill:'none',stroke:css('--accent'),'stroke-width':2.5}));
+  // doubling flags
+  const dt=Math.log(2)/Math.log(1+r/100);for(let k=1;k*dt<=t+1e-9;k++){const x=X(k*dt),y=Y(P*Math.pow(2,k));
+    Ln(s,x,y,x,y-22,css('--ink'),1.5);s.append(el('polygon',{points:`${x},${y-22} ${x+16},${y-17} ${x},${y-12}`,fill:css('--bad')}));
+    if(k<=6)T(s,x+3,y-26,'×'+Math.pow(2,k),{a:'start',sz:11,f:css('--ink'),b:1})}
+  // heads
+  const hc=Y(comp(t)),hs=Y(simple(t));
+  s.append(el('circle',{cx:X(t),cy:hc,r:7,fill:css('--surface'),stroke:css('--gold'),'stroke-width':3}));
+  s.append(el('circle',{cx:X(t),cy:hs,r:6,fill:css('--surface'),stroke:css('--accent'),'stroke-width':3}));
+  T(s,L+pw+12,Math.min(hc+4,base-30),'Compound '+inr(comp(t)),{a:'start',f:css('--gold'),b:1,sz:12});
+  T(s,L+pw+12,Math.max(hs+4,Math.min(hc+4,base-30)+18),'Simple '+inr(simple(t)),{a:'start',f:css('--accent'),b:1,sz:12});
+  // legend
+  [['--face','Your ₹1,00,000'],['--accent','Simple interest'],['--gold','Interest on interest']].forEach(([c,l],i)=>{Rc(s,L+8+i*170,top,12,12,css(c),{rx:2});T(s,L+26+i*170,top+11,l,{a:'start',sz:12})});
+  $('t1').value=Math.round(t);$('t1o').textContent=Math.round(t)+' years';
+  $('s1').innerHTML=[['Simple interest',inr(simple(t)),'--accent'],['Compounded',inr(comp(t)),'--gold'],['Interest on interest',inr(comp(t)-simple(t)),'--gold'],['Doubles about every',(72/r).toFixed(1)+' years','--ink']]
+    .map(([k,v,c])=>`<div class="stat"><span>${k}</span><b style="color:var(${c})">${v}</b></div>`).join('')};
+ const play=done=>{stopA&&stopA();$('p1').disabled=true;stopA=anim(5200,p=>{t=H*p;draw()},()=>{$('p1').disabled=false;done&&done()})};
+ $('p1').addEventListener('click',()=>play());
+ slider('r1',v=>v.toFixed(1)+'%',v=>{r=v;draw()});slider('t1',v=>v+' years',v=>{stopA&&stopA();$('p1').disabled=false;t=v;draw()});
+ draw();redraws.push(draw)})();
+
+/* ===== 2 Balance ===== */
+(()=>{let r=10,pick=null,theta=0,stopA=null;const A=100000,B=150000,n=5,be=(Math.pow(B/A,1/n)-1)*100;
+ $('be2').textContent=be.toFixed(2)+'%';
+ const pvB=()=>B/Math.pow(1+r/100,n);
+ const target=()=>{const d=(pvB()-A)/A;return Math.max(-13,Math.min(13,d*70))};
+ const draw=()=>{const s=$('c2');s.innerHTML='';const cx=380,cy=70,L=210,th=theta*Math.PI/180;
+  // stand
+  s.append(el('polygon',{points:`${cx-46},270 ${cx+46},270 ${cx+8},${cy} ${cx-8},${cy}`,fill:css('--faint'),stroke:css('--line')}));
+  const lx=cx-L*Math.cos(th),ly=cy-L*Math.sin(th),rx=cx+L*Math.cos(th),ry=cy+L*Math.sin(th);
+  Ln(s,lx,ly,rx,ry,css('--ink'),6);s.append(el('circle',{cx,cy,r:9,fill:css('--ink')}));
+  const pan=(x,y,col,soft,title,val,sub)=>{Ln(s,x,y,x-60,y+70,css('--muted'),1.2);Ln(s,x,y,x+60,y+70,css('--muted'),1.2);
+    s.append(el('path',{d:`M${x-78},${y+70} Q${x},${y+108} ${x+78},${y+70} Z`,fill:soft,stroke:col,'stroke-width':2}));
+    T(s,x,y+128,title,{f:css('--ink'),b:1,sz:14});T(s,x,y+150,val,{mono:1,f:col,b:1,sz:20});if(sub)T(s,x,y+170,sub,{sz:12})};
+  pan(lx,ly,css('--face'),css('--face-soft'),'Today','₹1,00,000');
+  pan(rx,ry,css('--accent'),css('--accent-soft'),'₹1,50,000 in 5 years',inr(pvB())+' today',`₹1,50,000 ÷ ${(1+r/100).toFixed(3)}⁵`);
+  const heavier=Math.abs(pvB()-A)<1?'Balanced':pvB()>A?'Waiting is worth more':'Taking it today is worth more';
+  T(s,cx,22,heavier,{f:Math.abs(pvB()-A)<1?css('--good'):css('--ink'),b:1,sz:16})};
+ const settle=()=>{stopA&&stopA();const a=theta,b=target();stopA=anim(600,p=>{theta=a+(b-a)*ease(p);draw()})};
+ const verdict=()=>{const m=$('m2');if(!pick){m.className='msg';m.textContent='Make your pick, then move the rate.';return}
+  const best=pvB()>A+0.5?'B':pvB()<A-0.5?'A':'tie';
+  if(best==='tie'){m.className='msg good';m.textContent='At exactly this rate both are worth the same.'}
+  else if(best===pick){m.className='msg good';m.textContent=`At ${r}% your pick wins: ${pick==='A'?'₹1,00,000 today beats ₹1,50,000 later, which is only worth '+inr(pvB())+' today.':'₹1,50,000 later is worth '+inr(pvB())+' today, more than ₹1,00,000.'}`}
+  else{m.className='msg bad';m.textContent=`At ${r}% the other option wins. Move the rate ${pick==='A'?'up past':'below'} ${be.toFixed(2)}% and your pick comes out ahead.`}};
+ $('g2').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{pick=c.dataset.c;$('g2').querySelectorAll('.chip').forEach(x=>x.classList.toggle('pick',x===c));verdict();settle()}));
+ slider('r2',v=>v.toFixed(1)+'%',v=>{r=v;verdict();settle()});
+ theta=0;draw();verdict();
+ const ob=new IntersectionObserver(es=>{if(es[0].isIntersecting){settle();ob.disconnect()}},{threshold:.4});ob.observe($('c2'));
+ redraws.push(draw)})();
+
+/* ===== 3 SIP jar ===== */
+(()=>{const C=50000;let r=12,n=20,k=20,stopA=null;
+ const fvA=(r,n)=>C*(Math.pow(1+r/100,n)-1)/(r/100);
+ const draw=()=>{const s=$('c3');s.innerHTML='';const jx=90,jw=240,jt=40,jb=330,jh=jb-jt;const full=fvA(r,n)*1.04;
+  s.append(el('rect',{x:jx-6,y:jt-18,width:jw+12,height:18,rx:6,fill:css('--line')}));
+  s.append(el('rect',{x:jx,y:jt,width:jw,height:jh,rx:22,fill:css('--bg'),stroke:css('--muted'),'stroke-width':2}));
+  let y=jb-2,tot=0;const kk=Math.floor(k+1e-9),frac=k-kk;
+  for(let j=1;j<=kk;j++){const v=C*Math.pow(1+r/100,k-j);tot+=v;const h=jh*v/full;const op=0.35+0.65*(1-(j-1)/Math.max(1,n-1));
+   s.append(el('rect',{x:jx+3,y:y-h,width:jw-6,height:Math.max(0,h-1),fill:css('--accent'),opacity:op,rx:j===1?18:2}));
+   if(h>16)T(s,jx+jw/2,y-h/2+4,`Year ${j}: ${inr(v)}`,{f:op>0.6?css('--surface'):css('--ink'),sz:11,mono:1});y-=h}
+  // falling coin for next deposit
+  if(kk<n&&frac>0){const cy=jt-30+frac*(y-jt+20);s.append(el('ellipse',{cx:jx+jw/2,cy,rx:22,ry:9,fill:css('--gold')}));T(s,jx+jw/2,cy-14,'+₹50,000',{f:css('--gold'),b:1,sz:12})}
+  T(s,jx+jw/2,jb+24,kk?`After ${kk} year${kk>1?'s':''}`:'Empty jar',{f:css('--ink'),b:1});
+  const inv=C*kk;
+  $('s3').innerHTML=`<div class="stat"><span>You put in</span><b style="color:var(--face)">${inr(inv)}</b></div><div class="stat"><span>Jar holds</span><b style="color:var(--accent)">${inr(tot)}</b></div>`;
+  const b=$('c3b');b.innerHTML='';const share=tot?inv/tot:1;Rc(b,0,24,400*share,26,css('--face'),{rx:4});Rc(b,400*share,24,400*(1-share),26,css('--gold'),{rx:4});
+  T(b,0,16,`Your money ${(share*100).toFixed(0)}%`,{a:'start',f:css('--face'),b:1,sz:13});T(b,400,16,`Growth ${((1-share)*100).toFixed(0)}%`,{a:'end',f:css('--gold'),b:1,sz:13});
+  };
+ const play=()=>{stopA&&stopA();$('p3').disabled=true;k=0;stopA=anim(Math.max(3500,n*260),p=>{k=n*p;draw()},()=>{k=n;$('p3').disabled=false;draw()})};
+ $('p3').addEventListener('click',play);
+ slider('r3',v=>v.toFixed(1)+'%',v=>{r=v;stopA&&stopA();$('p3').disabled=false;k=n;draw()});
+ slider('n3',v=>v+' years',v=>{n=v;stopA&&stopA();$('p3').disabled=false;k=n;draw()});
+ draw();redraws.push(draw)})();
+
+/* ===== 4 Loan ===== */
+(()=>{const C=240000;let r=9,n=10,p=0,stopA=null,played=false;
+ const af=(r,n)=>(1-Math.pow(1+r/100,-n))/(r/100);
+ const draw=()=>{const s=$('c4');s.innerHTML='';const base=270,tx=90,x0=200,x1=730,max=C*af(5,n)*1.12,h=v=>v*220/max;
+  const X=t=>x0+(x1-x0)*(t-1)/Math.max(1,n-1),bw=Math.min(40,(x1-x0)/n*0.6);
+  Ln(s,30,base,750,base,css('--line'),1.5);T(s,tx,base+22,'Today',{f:css('--ink'),b:1});
+  let stack=0;
+  for(let t=1;t<=n;t++){const pv=C/Math.pow(1+r/100,t);const d=Math.min(1,Math.max(0,(p*(n+3)-(t-1))/4));const e=ease(d);
+   const show=(n<=12||t===1||t===n||t%5===0);if(show)T(s,X(t),base+22,'Yr '+t,{sz:12});
+   Rc(s,X(t)-bw/2,base-h(C),bw,h(C),css('--faint'),{st:css('--line')});
+   if(e<1){const x=X(t)+(tx-X(t))*e,hh=h(C)+(h(pv)-h(C))*e;Rc(s,x-bw/2+3,base-hh-(e>0?stack*e*0:0),bw-6,hh,css('--accent'),{rx:2,op:1-0.5*e})}
+   if(e>=1){Rc(s,tx-30,base-h(stack)-h(pv),60,h(pv)-0.5,css('--accent'),{rx:1,op:0.55+0.45*(1-t/n)});stack+=pv}}
+  if(stack>0)T(s,tx,base-h(stack)-10,inr(stack),{mono:1,f:css('--ink'),b:1});
+  T(s,(x0+x1)/2,24,`${n} repayments of ₹2,40,000`,{f:css('--ink'),b:1});
+  const L=C*af(r,n),tot=C*n;
+  $('s4').innerHTML=`<div class="stat"><span>Loan you can take</span><b style="color:var(--accent)">${played?inr(L):'?'}</b></div><div class="stat"><span>Total you repay</span><b>${inr(tot)}</b></div><div class="stat"><span>Of which interest</span><b style="color:var(--bad)">${played?inr(tot-L):'?'}</b></div>`};
+ const play=()=>{stopA&&stopA();p=0;played=false;$('p4').disabled=true;stopA=anim(3400,q=>{p=q;draw()},()=>{p=1;played=true;$('p4').disabled=false;draw()})};
+ $('p4').addEventListener('click',play);
+ const upd=()=>{stopA&&stopA();$('p4').disabled=false;p=played?1:0;draw()};
+ slider('r4',v=>v.toFixed(1)+'%',v=>{r=v;upd()});slider('n4',v=>v+' years',v=>{n=v;upd()});
+ draw();redraws.push(draw)})();
+
+/* ===== 5 Forever ===== */
+(()=>{const C=100000;let r=8,N=0,stopA=null;const MAXN=150;
+ const draw=()=>{const s=$('c5');s.innerHTML='';const L=90,R=30,top=30,base=270,pw=760-L-R,ph=base-top,V=C/(r/100),ymax=V*1.12;
+  const X=t=>L+pw*t/MAXN,Y=v=>base-ph*v/ymax;
+  for(let i=0;i<=4;i++){const v=ymax*i/4;Ln(s,L,Y(v),L+pw,Y(v),css('--line'),1,.7);T(s,L-8,Y(v)+4,v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':inr(v),{a:'end',sz:12})}
+  [0,25,50,75,100,125,150].forEach(t=>T(s,X(t),base+20,t?'Yr '+t:'Today',{sz:12}));
+  Ln(s,L,Y(V),L+pw,Y(V),css('--gold'),2.5);T(s,L+pw,Y(V)-8,'Value of forever: '+inr(V),{a:'end',f:css('--gold'),b:1});
+  const n=Math.floor(N);let cum=0;const pts=[[0,0]];
+  for(let t=1;t<=n;t++){const pv=C/Math.pow(1+r/100,t);cum+=pv;pts.push([t,cum]);
+   if(t<=MAXN)Rc(s,X(t)-1.2,base-ph*pv/ymax*6,2.4,ph*pv/ymax*6,css('--face'),{rx:0,op:.6})}
+  if(n>0){s.append(el('polygon',{points:pts.map(([t,v])=>X(t)+','+Y(v)).join(' ')+` ${X(n)},${base} ${X(0)},${base}`,fill:css('--accent-soft')}));
+   s.append(el('polyline',{points:pts.map(([t,v])=>X(t)+','+Y(v)).join(' '),fill:'none',stroke:css('--accent'),'stroke-width':3}));
+   s.append(el('circle',{cx:X(n),cy:Y(cum),r:6,fill:css('--surface'),stroke:css('--accent'),'stroke-width':3}))}
+  T(s,L+8,top-8,'Running total of what each year\'s ₹1,00,000 is worth today',{a:'start',f:css('--accent'),b:1,sz:12});
+  T(s,L+pw,base-8,'Teal ticks: each year\'s payment in today\'s money (×6 scale)',{a:'end',sz:11});
+  const pct=cum/V*100;
+  $('s5').innerHTML=`<div class="stat"><span>Years counted</span><b>${n}</b></div><div class="stat"><span>Value so far</span><b style="color:var(--accent)">${inr(cum)}</b></div><div class="stat"><span>Share of forever</span><b>${pct.toFixed(1)}%</b></div><div class="stat"><span>Gift needed (C ÷ r)</span><b style="color:var(--gold)">${inr(V)}</b></div>`};
+ const play=()=>{stopA&&stopA();$('p5').disabled=true;stopA=anim(6000,p=>{N=MAXN*Math.pow(p,1.6);draw()},()=>{N=MAXN;$('p5').disabled=false;draw()})};
+ $('p5').addEventListener('click',play);
+ slider('r5',v=>v.toFixed(1)+'%',v=>{r=v;draw()});
+ N=0;draw();redraws.push(draw)})();
+
+/* ===== 6 Growth ===== */
+(()=>{const C=100000,r=8,n=20;let g=4,mode='ann';
+ const gaPV=(g,n)=>Math.abs(r-g)<1e-9?n*C/(1+r/100):C/((r-g)/100)*(1-Math.pow((1+g/100)/(1+r/100),n));
+ const draw=()=>{const m=$('c6m');m.innerHTML='';const L=40,W=680,X=v=>L+W*v/12;
+  Rc(m,L,30,X(r)-L,14,css('--good-soft'),{rx:7});Rc(m,X(r),30,L+W-X(r),14,css('--bad-soft'),{rx:7});
+  Ln(m,X(r),18,X(r),54,css('--ink'),2);T(m,X(r),14,'Interest rate 8%',{f:css('--ink'),b:1,sz:12});
+  [0,2,4,6,8,10,12].forEach(v=>T(m,X(v),66,v+'%',{sz:11}));
+  m.append(el('polygon',{points:`${X(g)-9},20 ${X(g)+9},20 ${X(g)},33`,fill:g<r?css('--accent'):css('--bad')}));
+  T(m,X(r)/2+L/2,41,'growth below the rate: finite value',{sz:11,f:css('--good')});T(m,(X(r)+L+W)/2,41,mode==='perp'?'no finite value':'payments outgrow discounting',{sz:11,f:css('--bad')});
+  const s=$('c6');s.innerHTML='';const base=220,L2=60,yrs=30,X2=t=>L2+(t-0.5)*(680/yrs),bw=680/yrs*0.62;
+  const amtMax=C*Math.pow(1+g/100,yrs-1)*1.05,hk=170/amtMax;
+  Ln(s,30,base,750,base,css('--line'),1.5);
+  for(let t=1;t<=yrs;t++){const a=C*Math.pow(1+g/100,t-1),pv=a/Math.pow(1+r/100,t),inPlay=mode==='perp'||t<=n,x=X2(t)-bw/2;
+   Rc(s,x,base-a*hk,bw,a*hk,css('--faint'),{st:css('--line'),rx:2,op:inPlay?1:.3});
+   if(inPlay)Rc(s,x+2,base-pv*hk,bw-4,pv*hk,pv>C/(1+r/100)+1?css('--bad'):css('--accent'),{rx:1});
+   if(t===1||t%5===0)T(s,X2(t),base+18,'Yr '+t,{sz:11})}
+  if(mode==='ann'){const xe=X2(n)+bw;Ln(s,xe+3,40,xe+3,base,css('--ink'),1.5);T(s,xe+8,52,'payments stop',{a:'start',sz:12,f:css('--ink')})}
+  else{T(s,750,52,'… forever',{a:'end',sz:13,f:css('--accent'),b:1})}
+  T(s,L2,24,g>r?'Red: payments grow faster than they are discounted, so each one is worth MORE today':'Grey: the payment. Purple: what it is worth today.',{a:'start',sz:12,f:g>r?css('--bad'):css('--muted'),b:g>r});
+  let V,txt;
+  if(mode==='perp'){V=g<r?C/((r-g)/100):Infinity;$('f6').textContent='PV = C₁ ÷ (r − g)';
+   $('t6').textContent=g<r?`At ${g}% growth the gift is ₹1,00,000 ÷ ${(r-g).toFixed(1)}% = ${inr(V)}. Every step closer to 8% makes it much larger.`:'With growth at or above the interest rate, the sum never settles: no gift is large enough. The formula only works when g < r.'}
+  else{V=gaPV(g,n);$('f6').textContent='PV = C₁ ÷ (r − g) × [1 − ((1+g) ÷ (1+r))ⁿ]';
+   $('t6').textContent=`Twenty rising payments are worth ${inr(V)} today. With no growth it would be ${inr(gaPV(0,n))}. Because payments stop, even growth above 8% gives a finite answer.`}
+  $('s6').innerHTML=`<div class="stat"><span>First payment</span><b>₹1,00,000</b></div><div class="stat"><span>Payment in year 20</span><b>${inr(C*Math.pow(1+g/100,19))}</b></div><div class="stat"><span>Gift needed today</span><b style="color:${V===Infinity?'var(--bad)':'var(--accent)'}">${V===Infinity?'∞  no finite value':inr(V)}</b></div>`};
+ $('mode6').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.m;$('mode6').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));draw()}));
+ slider('g6',v=>v.toFixed(1)+'%',v=>{g=v;draw()});
+ draw();redraws.push(draw)})();
+
+/* ===== 7 Banks + slicer ===== */
+(()=>{const offers=[['Bank A','12.00%','added monthly',0.12,12],['Bank B','12.20%','added quarterly',0.122,4],['Bank C','12.50%','added yearly',0.125,1]];
+ const ear=(a,m)=>m===Infinity?Math.exp(a)-1:Math.pow(1+a/m,m)-1;const eA=offers.map(o=>ear(o[3],o[4]));const best=eA.indexOf(Math.max(...eA));
+ let picked=null;const box=$('o7');
+ offers.forEach((o,i)=>{const b=document.createElement('button');b.className='offer';b.innerHTML=`<span class="bank">${o[0]}</span><span class="q">APR ${o[1]}, ${o[2]}</span><span class="e"></span>`;
+  b.addEventListener('click',()=>{picked=i;box.querySelectorAll('.offer').forEach((x,j)=>{x.classList.toggle('pick',j===i);x.classList.toggle('best',j===best);x.querySelector('.e').textContent='EAR '+(eA[j]*100).toFixed(2)+'%'});
+   const m=$('m7');if(i===best){m.className='msg good';m.textContent=`Right. Bank B's lower-looking rate is added quarterly, which beats Bank C's 12.50% added once a year. On ₹1,00,000 that is ${inr((eA[1]-eA[2])*1e5)} more each year.`}
+   else{m.className='msg bad';m.textContent=`Not quite. ${offers[i][0]} looks ${i===2?'highest':'fine'}, but Bank B pays most once interest-on-interest is counted: ${(eA[best]*100).toFixed(2)}% a year.`}});box.append(b)});
+ $('m7').textContent='Tap an offer.';
+ const M=[1,2,4,12,52,365,Infinity],ML=['Yearly','Half-yearly','Quarterly','Monthly','Weekly','Daily','Continuously'];let a=12,mi=3;
+ const draw=()=>{const s=$('c7');s.innerHTML='';const cx=180,cy=150,R=118,m=M[mi];
+  s.append(el('circle',{cx,cy,r:R,fill:css('--accent-soft'),stroke:css('--accent'),'stroke-width':2}));
+  if(m!==Infinity&&m<=52){for(let i=0;i<m;i++){const an=-Math.PI/2+2*Math.PI*i/m;Ln(s,cx,cy,cx+R*Math.cos(an),cy+R*Math.sin(an),css('--accent'),m>12?1:1.6)}
+   if(m>1)for(let i=0;i<m;i++){const an=-Math.PI/2+2*Math.PI*(i+0.5)/m,f=Math.pow(1+a/100/m,i+1);const rr=R*0.25+R*0.7*(i+1)/m;
+     s.append(el('circle',{cx:cx+rr*Math.cos(an)*0+ (R*0.82)*Math.cos(an),cy:cy+(R*0.82)*Math.sin(an),r:Math.min(9,3+60/m),fill:css('--gold'),opacity:0.4+0.6*(i+1)/m}))}}
+  else{s.append(el('circle',{cx,cy,r:R,fill:'none',stroke:css('--gold'),'stroke-width':m===Infinity?10:6,opacity:.7}))}
+  s.append(el('circle',{cx,cy,r:52,fill:css('--surface'),stroke:css('--line')}));
+  T(s,cx,cy-6,ML[mi],{f:css('--ink'),b:1,sz:13});T(s,cx,cy+14,m===Infinity?'every instant':m===1?'1 time a year':m+' times a year',{sz:12});
+  T(s,cx,292,'One year, sliced into compounding periods',{sz:12});
+  const E=ear(a/100,m);$('e7').textContent=(E*100).toFixed(2)+'%';
+  $('d7').textContent=`APR ${a}% → you actually earn ${(E*100).toFixed(2)}%. On ₹1,00,000 that is ${inr(E*1e5)} a year, ${inr((E-a/100)*1e5)} more than the APR suggests.`;
+  $('m7o').textContent=ML[mi]};
+ slider('a7',v=>v+'%',v=>{a=v;draw()});
+ const ms=$('m7s');ms.addEventListener('input',()=>{mi=+ms.value;draw()});
+ draw();redraws.push(draw)})();
+
+const rr=()=>redraws.forEach(f=>f());
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rr);
+new MutationObserver(rr).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+
+</html>
