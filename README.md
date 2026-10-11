@@ -5,7 +5,6 @@ Open `index.html` for the list of topics. Every page is a single, self-contained
 
 | Module | Page | File |
 |---|---|---|
-| 1. Time Value of Money | Activity: TVM Scenes | `tvm-scenes.html` |
 | 1. Time Value of Money | Activity: Reading Cash Flows | `tvm-reading-cash-flows.html` |
 | 2. Bond and Stock Valuation | Walkthrough: Bond Valuation | `bond-valuation.html` |
 | 2. Bond and Stock Valuation | Walkthrough: Stock Valuation | `stock-valuation.html` |
