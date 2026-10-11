@@ -169,14 +169,13 @@ body{margin:0}
 <!-- 5 perpetuity -->
 <section class="scene" id="sc5" data-nav="Perpetuity">
   <div><span class="tag">5 · Perpetuity</span><h2>A scholarship forever</h2>
-  <p class="story">An alumna wants to fund a <b>₹1,00,000 scholarship every year, forever</b>. How much must she give today? Each year's ₹1,00,000 is worth less today than the last. Count the years and watch them fill a bar that never overflows.</p></div>
-  <svg id="c5" viewBox="0 0 760 300" role="img" aria-label="Running total of present values approaching a ceiling"></svg>
+  <p class="story">An alumna wants to fund a <b>₹1,00,000 scholarship every year, forever</b>. How much must she give today? The payments never stop, yet the answer is a fixed amount. Two ways to see why.</p></div>
+  <svg id="c5" viewBox="0 0 760 330" role="img" aria-label="An endowment whose interest pays the scholarship, and the shrinking value of each payment"></svg>
   <div class="controls">
-    <button class="btn" id="p5">▶ Count the years</button>
     <div class="sl"><label for="r5">Interest rate <output id="r5o"></output></label><input id="r5" type="range" min="2" max="15" step="0.5" value="8"></div>
   </div>
   <div class="stats" id="s5"></div>
-  <div class="idea"><div class="k">The idea</div><div class="fm">PV = C ÷ r</div><p>Far-off payments are worth almost nothing today, so the running total levels off. If she invests C ÷ r at rate r, the interest alone pays the scholarship every year and the gift is never used up.</p></div>
+  <div class="idea"><div class="k">The idea</div><div class="fm">PV = C ÷ r</div><p>Invest C ÷ r at rate r and the interest alone pays C every year, so the money is never used up. That is why a stream that never ends has a finite value: exactly C ÷ r.</p></div>
 </section>
 
 <!-- 6 growth -->
@@ -360,38 +359,29 @@ function show(i,init){cur=Math.max(0,Math.min(scenes.length-1,i));scenes.forEach
  draw();redraws.push(draw)})();
 
 /* ===== 5 Forever ===== */
-(()=>{const C=100000;let r=8,N=0,stopA=null;const MAXN=100,SHOW=30;
- const L5=v=>'₹'+(v/1e5).toLocaleString('en-IN',{maximumFractionDigits:2})+'L';
- const draw=()=>{const s=$('c5');s.innerHTML='';const R=r/100,V=C/R,n=Math.floor(N+1e-9);
-  // top: each year's ₹1,00,000 and what it is worth today
-  const x0=70,x1=730,base=150,bw=(x1-x0)/SHOW*0.7,X=t=>x0+(x1-x0)*(t-0.5)/SHOW,h=v=>v/C*110;
-  Ln(s,40,base,750,base,css('--line'),1.5);
-  T(s,40,18,'Each year: ₹1,00,000 paid (grey) and what it is worth today (purple)',{a:'start',b:1,f:css('--ink'),sz:13});
-  const labs=[];for(let t=1;t<=SHOW;t++){const pv=C/Math.pow(1+R,t),on=t<=n,x=X(t)-bw/2;
-   Rc(s,x,base-h(C),bw,h(C),css('--faint'),{st:css('--line'),rx:2,op:on?1:.35});
-   if(on)Rc(s,x+2,base-h(pv),bw-4,h(pv),css('--accent'),{rx:1.5});
-   if(t===1||t%5===0)T(s,X(t),base+16,'Yr '+t,{sz:11});
-   if(on&&(t===1||t===10||t===20||t===30))labs.push([X(t),base-h(pv)-6,inr(pv)])}
-  labs.forEach(([lx,ly,lt],i)=>{const a=i===labs.length-1&&lx>650?'end':'middle';s.append(el('rect',{x:a==='end'?lx-62:lx-31,y:ly-12,width:62,height:15,rx:3,fill:css('--surface'),opacity:.9}));T(s,a==='end'?lx+6:lx,ly,lt,{a,sz:10,mono:1,f:css('--ink'),b:1})});
-  if(n>SHOW)T(s,x1,base+34,`Years ${SHOW+1} to ${n} are added below too, each worth even less`,{a:'end',sz:11,f:css('--accent')});
-  // bottom: the "forever" bar, filled by those values one year at a time
-  const by=230,bh=40,fx0=70,fW=600,sc=fW/V;
-  T(s,fx0,by-14,`Value of forever: C ÷ r = ₹1,00,000 ÷ ${R.toFixed(3)} = ${inr(V)}`,{a:'start',b:1,f:css('--gold'),sz:13});
-  Rc(s,fx0,by,fW,bh,css('--faint'),{st:css('--gold'),sw:2,rx:6});
-  let cum=0,x=fx0;
-  for(let t=1;t<=n;t++){const pv=C/Math.pow(1+R,t),w=pv*sc,op=0.95-0.6*Math.min(1,(t-1)/40);
-   Rc(s,x,by+2,Math.max(0.6,w-0.6),bh-4,css('--accent'),{rx:0,op});
-   if(w>34&&t<=6)T(s,x+w/2,by+bh/2+4,'Y'+t,{sz:10,b:1,f:css('--surface')});
-   x+=w;cum+=pv}
-  if(n>0){Ln(s,fx0+cum*sc,by-4,fx0+cum*sc,by+bh+4,css('--ink'),2);
-   T(s,Math.min(fx0+cum*sc,fx0+fW-4),by+bh+18,`${n} year${n>1?'s':''}: ${inr(cum)}`,{a:fx0+cum*sc>fx0+fW-150?'end':'middle',sz:12,b:1,f:css('--ink'),mono:1})}
-  else T(s,fx0+fW/2,by+bh/2+5,'Press "Count the years" to start filling',{sz:12});
-  const pct=cum/V*100;
-  $('s5').innerHTML=`<div class="stat"><span>Years counted</span><b>${n}</b></div><div class="stat"><span>Value so far</span><b style="color:var(--accent)">${inr(cum)}</b></div><div class="stat"><span>Share of forever</span><b>${pct.toFixed(1)}%</b></div><div class="stat"><span>Gift needed (C ÷ r)</span><b style="color:var(--gold)">${inr(V)}</b></div>`};
- const play=()=>{stopA&&stopA();$('p5').disabled=true;stopA=anim(7000,p=>{N=MAXN*Math.pow(p,1.8);draw()},()=>{N=MAXN;$('p5').disabled=false;draw()})};
- $('p5').addEventListener('click',play);
+(()=>{const C=100000;let r=8;
+ const draw=()=>{const s=$('c5');s.innerHTML='';const R=r/100,V=C/R;
+  const ink=css('--ink'),acc=css('--accent'),face=css('--face'),gold=css('--gold'),mu=css('--muted'),ln=css('--line'),fa=css('--faint'),surf=css('--surface');
+  // Panel 1: the endowment
+  T(s,20,20,`1. Put ${inr(V)} in the bank at ${r.toFixed(1)}%`,{a:'start',b:1,f:ink,sz:14});
+  const b1=150,cols=['Today','Yr 1','Yr 2','Yr 3','Yr 4','Yr 5'],X=i=>90+i*108,bw=62,bh=70;
+  Ln(s,30,b1,750,b1,ln,1.5);
+  cols.forEach((c,i)=>{const x=X(i)-bw/2;Rc(s,x,b1-bh,bw,bh,css('--face-soft'),{st:face,sw:1.5,rx:4});T(s,X(i),b1-bh/2+4,inr(V),{sz:10,mono:1,b:1,f:face});T(s,X(i),b1+16,c,{sz:12,f:i?mu:ink,b:!i});
+   if(i>0){Rc(s,X(i)-46,b1-bh-28,92,22,acc,{rx:4});T(s,X(i),b1-bh-13,'₹1,00,000 out',{sz:11,b:1,f:surf})}});
+  T(s,X(5)+56,b1-bh/2+4,'… forever',{a:'start',sz:12,b:1,f:face});
+  T(s,90-bw/2,b1+36,`Each year the balance earns ₹1,00,000 of interest. It is paid out as the scholarship, so the ${inr(V)} is never touched.`,{a:'start',sz:12,f:mu});
+  // Panel 2: each payment valued today
+  T(s,20,214,'2. Value each payment today: they shrink towards zero, so the total is finite',{a:'start',b:1,f:ink,sz:14});
+  const b2=310,yrs=24,x0=60,x1=600,X2=t=>x0+(x1-x0)*(t-1)/(yrs-1),w=16,h=v=>v/C*70;
+  Ln(s,30,b2,750,b2,ln,1.5);
+  for(let t=1;t<=yrs;t++){const pv=C/Math.pow(1+R,t);Rc(s,X2(t)-w/2,b2-h(C),w,h(C),fa,{st:ln,rx:2});Rc(s,X2(t)-w/2+2,b2-h(pv),w-4,h(pv),acc,{rx:1.5,op:1-0.5*(t-1)/(yrs-1)})}
+  [[1,'Yr 1'],[10,'Yr 10'],[20,'Yr 20']].forEach(([t,l])=>{const pv=C/Math.pow(1+R,t);T(s,X2(t),b2-h(C)-6,inr(pv),{sz:10,mono:1,b:1,f:ink})});
+  T(s,x1+28,b2-26,'… ∞',{a:'start',sz:16,b:1,f:acc});
+  T(s,x1+28,b2-8,`total ${inr(V)}`,{a:'start',sz:12,b:1,f:gold,mono:1});
+  const pv50=C/Math.pow(1+R,50),pv100=C/Math.pow(1+R,100);
+  $('s5').innerHTML=`<div class="stat"><span>Gift needed (C ÷ r)</span><b style="color:var(--gold)">${inr(V)}</b></div><div class="stat"><span>Interest it earns each year</span><b style="color:var(--accent)">₹1,00,000</b></div><div class="stat"><span>Year-50 payment, today</span><b>${inr(pv50)}</b></div><div class="stat"><span>Year-100 payment, today</span><b>${inr(pv100)}</b></div>`};
  slider('r5',v=>v.toFixed(1)+'%',v=>{r=v;draw()});
- N=0;draw();redraws.push(draw)})();
+ draw();redraws.push(draw)})();
 
 /* ===== 6 Growth ===== */
 (()=>{const C=100000,r=8,n=20;let g=4,mode='ann';
