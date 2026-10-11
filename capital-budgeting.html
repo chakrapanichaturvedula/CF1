@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: three-step stepper; in each step a concept index on the left and a stage on the right, as in the bond walkthrough. Term index on the left; on the right one stage per term, each with its own picture on a shared cash-flow timeline, a worked number and, where it helps, one control. */
+/* Layout: five-step stepper (a clickable map of methods first, a merits summary last); in each step a concept index on the left and a stage on the right, as in the bond walkthrough. Term index on the left; on the right one stage per term, each with its own picture on a shared cash-flow timeline, a worked number and, where it helps, one control. */
 :root{
   --bg:#F4F4F1; --surface:#FFFFFF; --ink:#16223A; --muted:#5B6578; --line:#DADDD8; --faint:#E7E8E3;
   --accent:#6B3FA0; --accent-soft:#EEE6F7; --face:#0F6E8C; --face-soft:#DCEEF3;
@@ -110,6 +110,36 @@ svg text.mono{font-family:var(--mono)}
 .seg button{flex:1 1 140px;font:500 14px var(--body);border:none;background:transparent;color:var(--ink);padding:8px 10px;border-radius:9px;cursor:pointer}
 .seg button.on{background:var(--surface);color:var(--accent);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .d{color:var(--disc)}
+/* v2: map step, summary cards */
+[hidden]{display:none!important}
+.stepper{grid-template-columns:repeat(5,1fr)}
+.layout.solo{grid-template-columns:1fr}
+.readout.noctl{grid-template-columns:1fr}
+.node{cursor:pointer}.node:hover rect:first-child{filter:brightness(.97)}.node:focus{outline:none}.node:focus-visible rect:first-child{stroke-width:3}
+.work .q{font-size:16px;color:var(--ink)}
+.work .rule{font-family:var(--body);font-size:20px;font-weight:600;line-height:1.3}
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:6px 0 4px}
+.mcard{border:1px solid var(--line);border-top:4px solid var(--face);border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.mcard.mn{border-top-color:var(--disc)}
+.mcard header{display:flex;flex-direction:column;gap:2px}
+.mcard header b{font-family:var(--display);font-size:20px;line-height:1.15}
+.mrule{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.tests{display:flex;flex-wrap:wrap;gap:4px}
+.tests span{font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:999px}
+.tests .ok{background:color-mix(in srgb,var(--par) 15%,transparent);color:var(--par)}
+.tests .no{background:color-mix(in srgb,var(--disc) 15%,transparent);color:var(--disc)}
+.mcard .lab{margin:2px 0 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.mcard ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13.5px;line-height:1.4}
+.mcard li{padding-left:18px;position:relative}
+.pro li::before{content:'+';position:absolute;left:2px;color:var(--par);font-weight:700}
+.con li::before{content:'−';position:absolute;left:2px;color:var(--disc);font-weight:700}
+.verdict{margin-top:auto;font-size:13px;font-weight:700;padding:6px 10px;border-radius:8px;text-align:center}
+.verdict.g{background:color-mix(in srgb,var(--par) 16%,transparent);color:var(--par)}
+.verdict.a{background:var(--accent-soft);color:var(--accent)}
+.verdict.r{background:var(--faint);color:var(--muted)}
+@media (max-width:900px){.stepper{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:640px){.stepper{grid-template-columns:1fr 1fr}}
+@media (min-width:821px){.index.desk-hide{display:none}}
 </style>
 <style>
 body{margin:0}
@@ -180,7 +210,7 @@ function fillChart(s,k,rows,{cut}){
       if(cut>=t)byCut=b;else if(cut>i)byCut=a+(cut-i)*c;
       Ln(s,X(b),y-4,X(b),y+hgt+4,k.surf,1.5);cum=b});
     const bx=X(byCut);s.append(el('polygon',{points:`${bx-7},${y+hgt+16} ${bx+7},${y+hgt+16} ${bx},${y+hgt+5}`,fill:k.d}));
-    T(s,bx,y+hgt+30,`by cutoff: ${L0(byCut)}`,{fill:k.d,bold:1,size:11});
+    const nr=Math.abs(bx-cx)<70;T(s,nr?bx-8:bx,y+hgt+30,`by cutoff: ${L0(byCut)}`,{anchor:nr?'end':'middle',fill:k.d,bold:1,size:11});
     if(cum>200.5)T(s,X(200)+6,y-8,'after payback: ignored',{anchor:'start',size:11,fill:col});
     const msg=pb!=null?`Paid back in ${pb.toFixed(2)} years`:`Never paid back: ${L0(200-cum)} short`;
     T(s,X(0),y-8,msg,{anchor:'start',fill:k.ink,bold:1,size:12});
@@ -200,8 +230,65 @@ function cumChart(s,k,series,{ymin=-220,ymax=140,cut=null}){
 const cumOf=(c,r=0)=>{let s=0;return c.map((x,t)=>s+=x/Math.pow(1+r,t))};
 const payback=cum=>{for(let t=1;t<cum.length;t++)if(cum[t]>=0&&cum[t-1]<0)return t-1+(-cum[t-1])/(cum[t]-cum[t-1]);return null};
 
-/* ================= STEP 1: NPV ================= */
-const S1={n:1,label:'Net present value',eyebrow:'Step 1 · The benchmark',title:'Net Present Value',
+/* ================= STEP 1: the map of methods ================= */
+const M=[
+ {id:'npv',g:'d',t:'NPV',sub:['Net present','value'],rule:'NPV > 0',full:'Net present value',ask:'How much value does the project add, in today\'s rupees?',dec:'Accept if NPV > 0. Between projects, pick the higher NPV.',res:'NPV = ₹40.80L, above 0: accept',where:'Explained in Step 2.'},
+ {id:'irr',g:'d',t:'IRR',sub:['Internal rate','of return'],rule:'IRR > R',full:'Internal rate of return',ask:'What rate of return does the project itself earn?',dec:'Accept if IRR is above the required return R.',res:'IRR = 19.44%, above 10%: accept',where:'Explained in Step 4.'},
+ {id:'pi',g:'d',t:'PI',sub:['Profitability','index'],rule:'PI > 1',full:'Profitability index',ask:'How much value comes back for each rupee invested?',dec:'Accept if PI is above 1.',res:'PI = 1.20, above 1: accept',where:'Explained in Step 4.'},
+ {id:'dpb',g:'d',t:'Disc. payback',sub:['Discounted','payback period'],rule:'DPB < cutoff',full:'Discounted payback period',ask:'How long until the discounted cash flows recover the cost?',dec:'Accept if it is shorter than a cutoff set by management.',res:'2.64 years',where:'Explained in Step 3.'},
+ {id:'pb',g:'n',t:'Payback',sub:['Payback','period'],rule:'PB < cutoff',full:'Payback period',ask:'How long until the cash flows recover the cost?',dec:'Accept if it is shorter than a cutoff set by management.',res:'2.33 years',where:'Explained in Step 3.'},
+ {id:'aar',g:'n',t:'AAR',sub:['Average','accounting return'],rule:'AAR > target',full:'Average accounting return',ask:'What accounting profit does it earn on the book value invested?',dec:'Accept if AAR is above a target return set by management.',res:'33.3%',where:'Not covered further: it uses accounting profit, not cash flows, and ignores timing.'}
+];
+function mapDraw(s,sel){const k=K(),W=110,G=10,LY=190,LH=100,cx=[...[0,1,2,3].map(i=>20+i*(W+G)),...[0,1].map(i=>520+i*(W+G))];
+ const col=g=>g==='d'?k.f:k.d,soft=g=>g==='d'?k.fS:k.fa;
+ // root
+ Rc(s,263,10,240,50,k.aS,{stroke:k.a,sw:1.5,rx:10});T(s,383,32,'Capital budgeting methods',{bold:1,fill:k.ink,size:15});T(s,383,50,'Should Deccan Foods invest ₹200 lakh?',{size:12});
+ Ln(s,383,60,383,78,k.m,1.5);Ln(s,251,78,633,78,k.m,1.5);Ln(s,251,78,251,92,k.m,1.5);Ln(s,633,78,633,92,k.m,1.5);
+ [[251,250,'d','Discounted','Use the time value of money'],[633,230,'n','Non-discounted','Ignore the time value of money']].forEach(([x,w,g,a,b])=>{
+  Rc(s,x-w/2,92,w,50,soft(g),{stroke:col(g),sw:1.5,rx:10});T(s,x,113,a,{bold:1,fill:col(g),size:14});T(s,x,131,b,{size:12})});
+ const grp=(g,x)=>{const xs=M.map((m,i)=>m.g===g?cx[i]+W/2:null).filter(v=>v!=null);Ln(s,x,142,x,168,k.m,1.5);Ln(s,xs[0],168,xs[xs.length-1],168,k.m,1.5);xs.forEach(v=>Ln(s,v,168,v,LY,k.m,1.5))};
+ grp('d',251);grp('n',633);
+ M.forEach((m,i)=>{const on=i===sel,x=cx[i],c=col(m.g),g=el('g',{class:'node',tabindex:0,role:'button','aria-label':m.full+(on?', selected':'')});
+  g.addEventListener('click',()=>S0.go(i));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();S0.go(i)}});
+  Rc(g,x,LY,W,LH,on?c:k.surf,{stroke:c,sw:on?2.5:1.5,rx:10});
+  const fg=on?k.surf:k.ink,sm=on?k.surf:k.m;
+  T(g,x+W/2,LY+24,m.t,{bold:1,fill:on?k.surf:c,size:m.t.length>8?13:16});
+  m.sub.forEach((l,j)=>T(g,x+W/2,LY+42+j*14,l,{size:11,fill:sm}));
+  Rc(g,x+10,LY+70,W-20,20,on?'rgba(255,255,255,.18)':soft(m.g),{rx:6});T(g,x+W/2,LY+84,m.rule,{mono:1,bold:1,size:11,fill:fg});
+  s.append(g)});
+ T(s,383,318,'Click any method to see what it asks and its decision rule',{size:12,fill:k.a,bold:1});
+ const m=M[sel];
+ return {legend:[[k.f,'Discounted: uses the time value of money'],[k.d,'Non-discounted: ignores it']],
+  work:`<div class="k">What it asks</div><div class="nt q">${m.ask}</div><div class="k">Decision rule</div><div class="rule" style="color:${m.g==='d'?'var(--face)':'var(--disc)'}">${m.dec}</div><div class="k">Deccan Foods at 10%</div><div>${m.res}</div>`};
+}
+const S0={n:1,label:'The methods',eyebrow:'Step 1 · The big picture',title:'Six Ways to Judge a Project',solo:true,
+ sub:'Every method answers the same question, should we invest, in a different way. The first split is whether a method uses the time value of money.',
+ state:{},
+ spec:()=>[['Cost today','₹200L','d'],['Cash inflows','₹50L, ₹100L, ₹150L','c'],['Required return','10%','']],
+ tabs:M.map((m,i)=>({id:m.id,name:m.full,short:m.rule,def:'Discounted methods bring future cash back to today before judging the project; non-discounted methods take the rupees as they come.',contrast:m.where,ctl:[],draw(s){return mapDraw(s,i)}}))};
+
+/* ================= STEP 5: merits and demerits ================= */
+const SUM=[
+ ['d','NPV','NPV > 0',[1,1,1],['Uses all the cash flows and discounts them properly','Measures value added in rupees; values add up across projects'],['Needs a required return','A rupee figure is less intuitive than a percentage'],'Use as the main rule','g'],
+ ['d','IRR','IRR > R',[1,1,1],['A single percentage, easy to communicate','Agrees with NPV for one ordinary project'],['Can have several IRRs when signs change twice','Can rank wrongly when projects differ in scale or timing'],'Use with care','a'],
+ ['d','PI','PI > 1',[1,1,1],['Value per rupee: useful when funds are limited','Agrees with NPV for independent projects'],['Can rank wrongly when projects differ in scale'],'Use with care','a'],
+ ['d','Discounted payback','DPB < cutoff',[1,0,1],['Accounts for the time value of money','Shows how quickly the cost is recovered'],['Ignores cash flows after the cutoff','The cutoff is arbitrary'],'Quick check only','r'],
+ ['n','Payback','PB < cutoff',[1,0,0],['Simple to compute and explain','Favours projects that return cash quickly'],['Ignores the time value of money','Ignores cash flows after the cutoff','The cutoff is arbitrary'],'Quick check only','r']
+];
+const TESTS=['Cash flows','All cash flows','Time value'];
+const S5={n:5,label:'Merits and demerits',eyebrow:'Step 5 · Summary',title:'Merits and Demerits',solo:true,
+ sub:'Each method checked against the three NPV tests: does it use cash flows, all of them, and the time value of money?',
+ state:{},spec:()=>[],
+ tabs:[{id:'sum',name:'Five methods side by side',short:'',def:'Green ticks are the tests a method passes. Read across the cards: only the discounted methods that use every cash flow pass all three.',
+  contrast:'NPV is the benchmark. IRR and PI give the same accept or reject answer for a single ordinary project; take care when choosing between projects. Payback rules are quick checks, not decision rules.',ctl:[],
+  html:()=>`<div class="sumgrid">${SUM.map(([g,n,rule,ts,pro,con,v,vc])=>`<article class="mcard m${g}"><header><b>${n}</b><span class="mrule">${rule}</span></header>
+   <div class="tests">${ts.map((p,i)=>`<span class="${p?'ok':'no'}">${p?'✓':'✗'} ${TESTS[i]}</span>`).join('')}</div>
+   <p class="lab">Merits</p><ul class="pro">${pro.map(x=>`<li>${x}</li>`).join('')}</ul>
+   <p class="lab">Demerits</p><ul class="con">${con.map(x=>`<li>${x}</li>`).join('')}</ul>
+   <div class="verdict ${vc}">${v}</div></article>`).join('')}</div>`}]};
+
+/* ================= STEP 2: NPV ================= */
+const S1={n:2,label:'NPV',eyebrow:'Step 2 · The benchmark',title:'Net Present Value',
  sub:'Deccan Foods is considering a new packaging line at its Medchal plant. It costs ₹200 lakh today and is expected to bring in ₹50, ₹100 and ₹150 lakh over the next three years. Is it worth doing?',
  state:{R:10},
  spec:(st)=>[['Cost today','₹200L','d'],['Cash inflows','₹50L, ₹100L, ₹150L','c'],['Required return',pc(st.R/100,1),'']],
@@ -221,7 +308,7 @@ const S1={n:1,label:'Net present value',eyebrow:'Step 1 · The benchmark',title:
     work:`<div class="fm">NPV = −C₀ + C₁ ÷ (1+R) + C₂ ÷ (1+R)² + C₃ ÷ (1+R)³</div><div>= −₹200L + ₹50L ÷ ${(1+R).toFixed(3)} + ₹100L ÷ ${(1+R).toFixed(3)}² + ₹150L ÷ ${(1+R).toFixed(3)}³</div><div>= −₹200L + <span class="c">${L(pv)}</span></div><div class="big" style="color:${col}">NPV = ${L(N)}</div>`+note(N>=0?'Positive: the inflows are worth more today than the cost, so the project adds value.':'Negative: the inflows are worth less today than the cost, so the project destroys value.')}}},
  {id:'curve',name:'NPV and the discount rate',short:'The NPV profile',
   def:'The same project at every discount rate. The higher the required return, the less the future inflows are worth today, so NPV falls.',
-  contrast:'The line crosses zero at 19.44%. Below that rate the project adds value; above it, it does not. That crossing point has a name, the internal rate of return, which is where Step 3 starts.',
+  contrast:'The line crosses zero at 19.44%. Below that rate the project adds value; above it, it does not. That crossing point has a name, the internal rate of return, which is where Step 4 starts.',
   ctl:[{key:'R',label:'Required return',min:0,max:40,step:0.5,fmt:v=>v.toFixed(1)+'%',note:'Watch the point slide along the curve.'}],
   draw(s,st){const k=K(),R=st.R/100,N=npv(P,R);
    profile(s,k,[{c:P,col:k.a,name:'NPV'}],{rmin:0,rmax:0.44,ymin:-80,ymax:120,ytick:40,R,marks:[[R,N,N>=0?k.par:k.d,L(N),-12,'start'],[IRRP,0,k.f,'NPV = 0 at '+pc(IRRP),22,'start']]});
@@ -229,11 +316,11 @@ const S1={n:1,label:'Net present value',eyebrow:'Step 1 · The benchmark',title:
     work:`<div class="fm">NPV at R = ${pc(R,1)}</div><div class="big" style="color:${N>=0?'var(--par)':'var(--disc)'}">${L(N)}</div>`+note(N>=0?`At ${pc(R,1)} the project is worth taking.`:`At ${pc(R,1)} the project should be rejected.`)}}}
  ]};
 
-/* ================= STEP 2: rules that ignore time ================= */
-const S2={n:2,label:'Payback and AAR',eyebrow:'Step 2 · Simple rules and their flaws',title:'Payback, Discounted Payback and AAR',
- sub:'Managers like quick answers: how fast do we get our money back, and what accounting return do we earn? These rules are easy, but each fails at least one of the three NPV tests.',
- state:{cut:2,R:10,rev:0},
- spec:(st,id)=>[['Project A','−₹200, ₹50, ₹100, ₹150L','c'],['Project B','−₹200, ₹100, ₹100, ₹10L','f'],id==='aar'?['Life','3 years, straight-line','']:['Required return',pc(st.R/100,1),'']],
+/* ================= STEP 3: payback ================= */
+const S2={n:3,label:'Payback',eyebrow:'Step 3 · How fast is the money back?',title:'Payback and Discounted Payback',
+ sub:'Managers like a quick answer: how fast do we get our money back? Easy to compute, but each version fails at least one of the three NPV tests.',
+ state:{cut:2,R:10},
+ spec:(st)=>[['Project A','−₹200, ₹50, ₹100, ₹150L','c'],['Project B','−₹200, ₹100, ₹100, ₹10L','f'],['Required return',pc(st.R/100,1),'']],
  tabs:[
  {id:'pay',name:'Payback period',short:'How fast is the cost recovered?',
   def:'Add up the cash flows year by year and see when the running total turns positive. Accept the project if that happens before a cutoff set by management.',
@@ -253,27 +340,14 @@ const S2={n:2,label:'Payback and AAR',eyebrow:'Step 2 · Simple rules and their 
    fillChart(s,k,[{name:'Project A',col:k.a,flows:P.slice(1).map((c,i)=>c/Math.pow(1+R,i+1))},{name:'Project B',col:k.f,flows:PB.slice(1).map((c,i)=>c/Math.pow(1+R,i+1))}],{cut:st.cut});
    const f=p=>p==null?'never pays back':p.toFixed(2)+' years';
    return {legend:[[k.a,'Discounted cash flows filling the cost'],[k.fa,'Cost still to recover',k.l],[k.d,'Recovered by the cutoff']],
-    work:`<div class="fm">Discounted payback at ${pc(R,1)}</div><div>A: <span class="c">${f(pA)}</span></div><div>B: <span class="f">${f(pB)}</span></div>`+note(`What is left over after the cost, or still short of it, is each project's NPV: A ${L(cA[3])}, B ${L(cB[3])}.`)}}},
- {id:'aar',name:'Average accounting return',short:'Accounting profit ÷ book value',
-  def:'AAR divides average net income by the average book value of the investment. It uses accounting numbers, not cash flows. Here Project A is depreciated straight-line over 3 years, ₹66.67L a year, and there are no taxes.',
-  contrast:'Reverse the order of the profits and the AAR does not move, even though NPV does: AAR ignores timing. It also uses book values instead of cash, and needs an arbitrary cutoff. Easy to compute, but seriously flawed.',
-  ctl:[{key:'rev',type:'seg',options:[[0,'Profits as given'],[1,'Reverse the order']]}],
-  draw(s,st){const k=K(),dep=200/3,cf=st.rev?[-200,150,100,50]:P,ni=[1,2,3].map(t=>cf[t]-dep),avgNI=(ni[0]+ni[1]+ni[2])/3,avgBV=100,aar=avgNI/avgBV;
-   const base=190,h=v=>v*1.1,X=t=>110+t*100;Ln(s,40,base,380,base,k.l,1.5);T(s,210,30,'Net income each year',{bold:1,fill:k.ink,size:13});
-   ni.forEach((v,i)=>{const t=i+1,col=v>=0?k.a:k.d;Rc(s,X(t)-22,v>=0?base-h(v):base,44,h(Math.abs(v)),col,{rx:2});T(s,X(t),v>=0?base-h(v)-8:base+h(-v)+14,L(v),{mono:1,size:11,fill:k.ink});T(s,X(t),base+(v<0?h(-v)+30:18),'Yr '+t,{size:12})});
-   Ln(s,X(1)-30,base-h(avgNI),X(3)+30,base-h(avgNI),k.par,2);T(s,X(1)-30,base-h(avgNI)-6,'avg '+L(avgNI),{anchor:'start',fill:k.par,bold:1,size:11});
-   const b2=270,X2=t=>460+t*80,hb=v=>v*0.9;Ln(s,420,b2,750,b2,k.l,1.5);T(s,580,30,'Book value of the machine',{bold:1,fill:k.ink,size:13});
-   [0,1,2,3].forEach(t=>{const bv=200-dep*t;Rc(s,X2(t)-20,b2-hb(bv),40,hb(bv),k.fS,{stroke:k.f});T(s,X2(t),b2-hb(bv)-8,L0(bv),{mono:1,size:11,fill:k.ink});T(s,X2(t),b2+18,t?'Yr '+t:'Start',{size:12})});
-   Ln(s,X2(0)-26,b2-hb(100),X2(3)+26,b2-hb(100),k.par,2);T(s,X2(0)-26,b2-hb(100)-6,'avg ₹100L',{anchor:'start',fill:k.par,bold:1,size:11});
-   return {legend:[[k.a,'Net income'],[k.fS,'Book value',k.f],[k.par,'Averages']],
-    work:`<div class="fm">AAR = average net income ÷ average book value</div><div>Net income = cash flow − depreciation of ₹66.67L</div><div>= ${L(avgNI)} ÷ ₹100L</div><div class="big">AAR = ${pc(aar,1)}</div>`+note(`NPV at 10% with these cash flows: ${L(npv(cf,.1))}. AAR stays at ${pc(aar,1)} either way.`)}}}
+    work:`<div class="fm">Discounted payback at ${pc(R,1)}</div><div>A: <span class="c">${f(pA)}</span></div><div>B: <span class="f">${f(pB)}</span></div>`+note(`What is left over after the cost, or still short of it, is each project's NPV: A ${L(cA[3])}, B ${L(cB[3])}.`)}}}
  ]};
 
-/* ================= STEP 3: IRR, PI and the scorecard ================= */
-const S3={n:3,label:'IRR and PI',eyebrow:'Step 3 · Rates and ratios',title:'IRR, Its Problems, and PI',
+/* ================= STEP 4: IRR and PI ================= */
+const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR, Its Problems, and PI',
  sub:'IRR and PI are close cousins of NPV: they use all the cash flows and discount them. For a single ordinary project they agree with NPV. The trouble starts with unusual cash flows and with choosing between projects.',
  state:{R:10},
- spec:(st,id)=>id==='multi'?[['Cash flows','−₹200, ₹200, ₹800, −₹800L','c'],['Signs change','twice','']]:id==='scale'?[['Small','−₹1L, then ₹2L','c'],['Big','−₹1,000L, then ₹1,500L','f'],['Required return',pc(st.R/100,1),'']]:id==='timing'?[['Project A','−₹100, ₹100, ₹10, ₹10L','c'],['Project B','−₹100, ₹10, ₹10, ₹120L','d'],['Required return',pc(st.R/100,1),'']]:id==='score'?[['Project','Deccan Foods line','c'],['Required return','10%','']]:[['Cost today','₹200L','d'],['Cash inflows','₹50L, ₹100L, ₹150L','c'],['Required return',pc(st.R/100,1),'']],
+ spec:(st,id)=>id==='multi'?[['Cash flows','−₹200, ₹200, ₹800, −₹800L','c'],['Signs change','twice','']]:id==='scale'?[['Small','−₹1L, then ₹2L','c'],['Big','−₹1,000L, then ₹1,500L','f'],['Required return',pc(st.R/100,1),'']]:id==='timing'?[['Project A','−₹100, ₹100, ₹10, ₹10L','c'],['Project B','−₹100, ₹10, ₹10, ₹120L','d'],['Required return',pc(st.R/100,1),'']]:[['Cost today','₹200L','d'],['Cash inflows','₹50L, ₹100L, ₹150L','c'],['Required return',pc(st.R/100,1),'']],
  tabs:[
  {id:'irr',name:'Internal rate of return',short:'The rate where NPV = 0',
   def:'IRR is the discount rate that makes NPV exactly zero: the project\'s own rate of return. Accept the project if its IRR is above the required return.',
@@ -320,21 +394,10 @@ const S3={n:3,label:'IRR and PI',eyebrow:'Step 3 · Rates and ratios',title:'IRR
    Rc(s,420,base-h(pv),110,h(pv),k.a,{rx:3});T(s,475,base-h(pv)-8,'PV '+L(pv),{mono:1,bold:1,fill:k.a});T(s,475,base+18,'Value of the inflows',{size:12});
    Ln(s,150,base,600,base,k.l,1.5);T(s,640,base-h(200),`PI = ${pi.toFixed(3)}`,{mono:1,bold:1,fill:pi>=1?k.par:k.d,size:18});T(s,640,base-h(200)+20,pi>=1?'above 1: accept':'below 1: reject',{size:12,fill:pi>=1?k.par:k.d,bold:1});
    return {legend:[[k.d,'Cost'],[k.a,'Present value of inflows']],
-    work:`<div class="fm">PI = PV of future cash flows ÷ initial cost</div><div>= ${L(pv)} ÷ ₹200L</div><div class="big">PI = ${pi.toFixed(3)}</div>`+note(`Every ₹1 invested brings back ₹${pi.toFixed(2)} in today's money. NPV = ${L(pv-200)}.`)}}},
- {id:'score',name:'Scorecard',short:'All six rules together',
-  def:'The three tests from Step 1, applied to every rule, with each rule\'s answer for the Deccan Foods line at 10%.',
-  contrast:'NPV passes every test and has no serious problems: use it as the primary rule. IRR and PI agree with NPV for single, ordinary projects. Payback and AAR are quick checks at best.',ctl:[],
-  draw(s){const k=K(),rows=[['NPV','Yes','Yes','Yes','₹40.80L: accept'],['Payback','Yes','No','No','2.33 years'],['Discounted payback','Yes','No','Yes','2.64 years'],['AAR','No','Yes','No','33.3%'],['IRR','Yes','Yes','Yes','19.44% > 10%: accept'],['PI','Yes','Yes','Yes','1.204 > 1: accept']],
-   cols=[30,220,340,460,570],head=['Rule','Cash flows?','All of them?','Time value?','Deccan Foods at 10%'];
-   head.forEach((t,i)=>T(s,cols[i]+(i&&i<4?50:0),34,t,{anchor:i&&i<4?'middle':'start',bold:1,fill:k.ink,size:12}));Ln(s,24,44,744,44,k.l,1.5);
-   rows.forEach((r,j)=>{const y=74+j*40;if(j===0)Rc(s,24,y-24,720,36,k.aS,{rx:6});
-     r.forEach((t,i)=>{const yes=t==='Yes',no=t==='No';T(s,cols[i]+(i&&i<4?50:0),y,t,{anchor:i&&i<4?'middle':'start',bold:i===0||yes||no,fill:yes?k.par:no?k.d:k.ink,size:i===4?12:13,mono:i===4})});
-     Ln(s,24,y+16,744,y+16,k.l,1)});
-   return {legend:[[k.par,'Passes the test'],[k.d,'Fails the test']],
-    work:`<div class="k">Watch out for</div><div class="nt">IRR: multiple IRRs, scale and timing between projects</div><div class="nt">PI: scale between mutually exclusive projects</div><div class="nt">Payback, AAR: arbitrary cutoffs set by management</div>`}}}
+    work:`<div class="fm">PI = PV of future cash flows ÷ initial cost</div><div>= ${L(pv)} ÷ ₹200L</div><div class="big">PI = ${pi.toFixed(3)}</div>`+note(`Every ₹1 invested brings back ₹${pi.toFixed(2)} in today's money. NPV = ${L(pv-200)}.`)}}}
  ]};
 
-const STEPS=[S1,S2,S3];
+const STEPS=[S0,S1,S2,S3,S5];
 
 /* ================= framework ================= */
 const stepper=document.getElementById('stepper'),host=document.getElementById('steps');
@@ -347,18 +410,20 @@ STEPS.forEach((S,si)=>{
    <div class="layout"><div class="index" role="tablist" aria-label="Concepts"></div>
    <section class="stage" role="tabpanel" aria-live="polite"><h2 class="nm"></h2><p class="def"></p>
    <svg viewBox="0 0 760 330" role="img"></svg><div class="trio legend"></div>
-   <div class="readout"><div class="work"></div><div class="ctl"></div></div>
+   <div class="readout"><div class="work"></div><div class="ctl"></div></div><div class="free" hidden></div>
    <p class="contrast"></p><div class="nav"><button class="btn prev">Previous</button><button class="btn primary next">Next</button></div></section></div></div>`;
   host.append(sec);
   const q=c=>sec.querySelector(c),idx=q('.index');let cur=0;
+  if(S.solo){q('.layout').classList.add('solo');if(S.tabs.length===1)idx.hidden=true;else idx.classList.add('desk-hide')}
   S.tabs.forEach((t,i)=>{const bt=document.createElement('button');bt.className='term';bt.setAttribute('role','tab');bt.innerHTML=`<b>${t.name}</b><span>${t.short}</span>`;bt.addEventListener('click',()=>show(i));idx.append(bt)});
-  q('.prev').addEventListener('click',()=>show(cur-1));q('.next').addEventListener('click',()=>show(cur+1));
+  q('.prev').addEventListener('click',()=>show(cur-1));q('.next').addEventListener('click',()=>{if(cur<S.tabs.length-1)show(cur+1);else if(STEPS[si+1])stepper.children[si+1].click()});
+  S.go=i=>show(i);
   function show(i){cur=Math.max(0,Math.min(S.tabs.length-1,i));const t=S.tabs[cur];
     [...idx.children].forEach((b,j)=>b.setAttribute('aria-selected',j===cur));
     q('.nm').textContent=t.name;q('.def').textContent=t.def;q('.contrast').textContent=t.contrast;
-    q('.prev').disabled=cur===0;q('.next').disabled=cur===S.tabs.length-1;q('svg').setAttribute('aria-label',t.name+' chart');
+    q('.prev').disabled=cur===0;const last=cur===S.tabs.length-1;q('.next').disabled=last&&!STEPS[si+1];q('.next').textContent=last&&STEPS[si+1]?'Next: '+STEPS[si+1].label:'Next';q('.prev').style.visibility=S.tabs.length===1?'hidden':'';q('.next').style.visibility=last&&!STEPS[si+1]?'hidden':'';q('svg').setAttribute('aria-label',t.name+' chart');
     buildCtl(t);S.render()}
-  function buildCtl(t){const box=q('.ctl');box.innerHTML='';box.hidden=!t.ctl.length;
+  function buildCtl(t){const box=q('.ctl');box.innerHTML='';box.hidden=!t.ctl.length;q('.readout').classList.toggle('noctl',!t.ctl.length);
     t.ctl.forEach(c=>{
       if(c.type==='seg'){const w=document.createElement('div');w.className='seg';
         c.options.forEach(([v,l])=>{const b=document.createElement('button');b.type='button';b.textContent=l;b.classList.toggle('on',S.state[c.key]===v);b.addEventListener('click',()=>{S.state[c.key]=v;[...w.children].forEach(x=>x.classList.toggle('on',x===b));S.render()});w.append(b)});box.append(w);return}
@@ -367,7 +432,10 @@ STEPS.forEach((S,si)=>{
       const inp=w.querySelector('input'),out=w.querySelector('output');S.state[c.key]=+inp.value;out.textContent=c.fmt(+inp.value);
       inp.addEventListener('input',()=>{S.state[c.key]=+inp.value;out.textContent=c.fmt(+inp.value);S.render()});box.append(w)})}
   S.render=()=>{const t=S.tabs[cur],svg=q('svg');svg.innerHTML='';
-    q('.spec').innerHTML='<div class="spec-h">The project</div>'+S.spec(S.state,t.id).map(([l,v,c])=>`<div><span>${l}</span><b class="${c}">${v}</b></div>`).join('');
+    const sp=S.spec(S.state,t.id);q('.spec').hidden=!sp.length;
+    q('.spec').innerHTML='<div class="spec-h">The project</div>'+sp.map(([l,v,c])=>`<div><span>${l}</span><b class="${c}">${v}</b></div>`).join('');
+    const free=!!t.html;svg.toggleAttribute('hidden',free);q('.legend').hidden=free;q('.readout').hidden=free;q('.free').hidden=!free;
+    if(free){q('.free').innerHTML=t.html();return}
     const out=t.draw(svg,S.state);q('.work').innerHTML=out.work;
     q('.legend').innerHTML=out.legend.map(([c,l,st])=>`<span><i style="background:${c};${st?'border:1px solid '+st:''}"></i>${l}</span>`).join('')};
   show(0);
