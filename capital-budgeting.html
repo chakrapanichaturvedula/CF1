@@ -356,30 +356,7 @@ const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR
   draw(s,st){const k=K(),R=st.R/100,N=npv(P,R);
    profile(s,k,[{c:P,col:k.a,name:'NPV'}],{rmin:0,rmax:0.44,ymin:-80,ymax:120,ytick:40,R,marks:[[0.16,npv(P,.16),k.m,'16%: ₹13.52L',-12,'end'],[0.2,npv(P,.2),k.m,'20%: −₹2.08L',22,'start'],[IRRP,0,k.f,'IRR '+pc(IRRP),-14,'start']]});
    return {legend:[[k.a,'NPV at each rate'],[k.f,'IRR']],
-    work:`<div class="fm">0 = −₹200L + ₹50L ÷ (1+IRR) + ₹100L ÷ (1+IRR)² + ₹150L ÷ (1+IRR)³</div><div>Solved by trial and error: 16% gives NPV +₹13.52L, 20% gives −₹2.08L</div><div class="big">IRR = ${pc(IRRP)}</div>`+note(`${pc(IRRP)} ${IRRP>R?'>':'<'} ${pc(R,1)}, so ${IRRP>R?'accept':'reject'}. NPV agrees: ${L(N)}.`)}}},
- {id:'interp',name:'Finding IRR by interpolation',short:'Between a + NPV and a − NPV',
-  def:'Without a calculator, find IRR in two moves. Try one rate that gives a positive NPV and one that gives a negative NPV; IRR lies between them. Then treat the NPV line between the two points as straight and see where it hits zero.',
-  contrast:'Work from either side and you reach the same answer. The straight line sits slightly away from the curved NPV line, so the answer is close but not exact; the closer the two rates, the better the estimate. Try the wider pairs.',
-  ctl:[{key:'pair',type:'seg',options:[[0,'16% and 20%'],[1,'15% and 25%'],[2,'10% and 30%']]}],
-  draw(s,st){const k=K(),[r1,r2]=[[.16,.20],[.15,.25],[.10,.30]][st.pair],N1=npv(P,r1),N2=npv(P,r2),gap=N1-N2,d=r2-r1,est=r1+d*N1/gap;
-   const CX=[210,340,470,600];['Today','Year 1','Year 2','Year 3'].forEach((t,i)=>T(s,CX[i],14,t,{bold:1,fill:k.ink,size:12}));
-   P.forEach((v,i)=>{const pos=v>0;Rc(s,CX[i]-44,24,88,24,pos?k.aS:k.fa,{stroke:pos?k.a:k.l,rx:6});T(s,CX[i],41,L0(v),{mono:1,bold:1,size:12,fill:pos?k.a:k.ink})});
-   T(s,24,41,'Cash flows',{anchor:'start',bold:1,fill:k.ink,size:13});Ln(s,24,64,736,64,k.l,1);
-   const a=r1-d*0.25,b=r2+d*0.25,Lx=90,Rx=600,top=96,base=300,ymax=N1*1.25,ymin=Math.min(N2*1.6,-ymax*0.35),X=r=>Lx+(r-a)/(b-a)*(Rx-Lx),Y=v=>top+(ymax-v)/(ymax-ymin)*(base-top),y0=Y(0);
-   Ln(s,Lx,y0,Rx,y0,k.ink,1.5);T(s,Lx-8,y0+4,'NPV = 0',{anchor:'end',size:11});
-   const pts=[];for(let r=a;r<=b+1e-9;r+=(b-a)/120)pts.push(X(r)+','+Y(npv(P,r)));s.append(el('polyline',{points:pts.join(' '),fill:'none',stroke:k.a,'stroke-width':2.5,opacity:.5}));
-   Ln(s,X(r1),Y(N1),X(r2),Y(N2),k.f,2.5);
-   Rc(s,X(r1)-6,Y(N1),12,y0-Y(N1),k.par,{rx:2});Rc(s,X(r2)-6,y0,12,Y(N2)-y0,k.d,{rx:2});
-   T(s,X(r1)-12,Y(N1)+14,'+'+L(N1),{anchor:'end',mono:1,bold:1,size:12,fill:k.par});T(s,X(r2)+12,Y(N2)+4,L(N2),{anchor:'start',mono:1,bold:1,size:12,fill:k.d});
-   T(s,X(r1),y0+18,pc(r1,0),{bold:1,size:12,fill:k.ink});T(s,X(r2),y0-10,pc(r2,0),{bold:1,size:12,fill:k.ink});
-   const bx=Rx+40;Ln(s,bx,Y(N1),bx,Y(N2),k.ink,1.5);Ln(s,bx-6,Y(N1),bx+6,Y(N1),k.ink,1.5);Ln(s,bx-6,Y(N2),bx+6,Y(N2),k.ink,1.5);
-   T(s,bx+10,(Y(N1)+Y(N2))/2-6,'Distance',{anchor:'start',size:11});T(s,bx+10,(Y(N1)+Y(N2))/2+10,L(gap),{anchor:'start',mono:1,bold:1,size:12,fill:k.ink});
-   const arw=(x1,x2,y,col,lab,dy)=>{Ln(s,x1,y,x2,y,col,2);const dir=x2>x1?1:-1;s.append(el('polygon',{points:`${x2},${y} ${x2-7*dir},${y-4} ${x2-7*dir},${y+4}`,fill:col}));T(s,(x1+x2)/2,y+dy,lab,{mono:1,bold:1,size:11,fill:col})};
-   arw(X(r1),X(est)-8,y0+36,k.par,'+'+pc(est-r1),14);arw(X(r2),X(est)+8,y0-30,k.d,'−'+pc(r2-est),-8);
-   s.append(el('circle',{cx:X(est),cy:y0,r:6,fill:k.surf,stroke:k.f,'stroke-width':2.5}));
-   Rc(s,X(est)-38,y0+9,76,16,k.surf,{rx:3});T(s,X(est),y0+21,'≈ '+pc(est),{mono:1,bold:1,size:12,fill:k.f});
-   return {legend:[[k.f,'Straight line between the two points'],[k.a,'Actual NPV line'],[k.par,'Positive NPV'],[k.d,'Negative NPV']],
-    work:`<div>Distance = ${L(N1)} − (${L(N2)}) = <b>${L(gap)}</b></div><div class="k">From the low side: add</div><div>${pc(r1,0)} + ${pc(d,0)} × ${N1.toFixed(2)} ÷ ${gap.toFixed(2)} = <span class="c">${pc(est)}</span></div><div class="k">From the high side: subtract</div><div>${pc(r2,0)} − ${pc(d,0)} × ${Math.abs(N2).toFixed(2)} ÷ ${gap.toFixed(2)} = <span class="c">${pc(est)}</span></div><div class="big">IRR ≈ ${pc(est)}</div>`+note(`Exact IRR is ${pc(IRRP)}.`)}}},
+    work:`<div class="fm">0 = −₹200L + ₹50L ÷ (1+IRR) + ₹100L ÷ (1+IRR)² + ₹150L ÷ (1+IRR)³</div><div>16% gives NPV +₹13.52L and 20% gives −₹2.08L, so IRR lies between them. The last tab shows how to find it by hand.</div><div class="big">IRR = ${pc(IRRP)}</div>`+note(`${pc(IRRP)} ${IRRP>R?'>':'<'} ${pc(R,1)}, so ${IRRP>R?'accept':'reject'}. NPV agrees: ${L(N)}.`)}}},
  {id:'lend',name:'Lending or borrowing?',short:'Same IRR, opposite answers',
   def:'Project A: you pay ₹100 lakh today and get ₹130 lakh next year, like lending money. Project B: you receive ₹100 lakh today and pay ₹130 lakh next year, like borrowing. Both have an IRR of 30%.',
   contrast:'IRR is 30% for both, so "accept if IRR > R" says take both. But a lender wants a high rate and a borrower wants a low one: for B the rule flips to accept if IRR < R. NPV needs no flipping: it is positive for A and negative for B whenever R is below 30%.',
@@ -440,7 +417,29 @@ const S3={n:4,label:'IRR and PI',eyebrow:'Step 4 · Rates and ratios',title:'IRR
    Rc(s,420,base-h(pv),110,h(pv),k.a,{rx:3});T(s,475,base-h(pv)-8,'PV '+L(pv),{mono:1,bold:1,fill:k.a});T(s,475,base+18,'Value of the inflows',{size:12});
    Ln(s,150,base,600,base,k.l,1.5);T(s,640,base-h(200),`PI = ${pi.toFixed(3)}`,{mono:1,bold:1,fill:pi>=1?k.par:k.d,size:18});T(s,640,base-h(200)+20,pi>=1?'above 1: accept':'below 1: reject',{size:12,fill:pi>=1?k.par:k.d,bold:1});
    return {legend:[[k.d,'Cost'],[k.a,'Present value of inflows']],
-    work:`<div class="fm">PI = PV of future cash flows ÷ initial cost</div><div>= ${L(pv)} ÷ ₹200L</div><div class="big">PI = ${pi.toFixed(3)}</div>`+note(`Every ₹1 invested brings back ₹${pi.toFixed(2)} in today's money. NPV = ${L(pv-200)}.`)}}}
+    work:`<div class="fm">PI = PV of future cash flows ÷ initial cost</div><div>= ${L(pv)} ÷ ₹200L</div><div class="big">PI = ${pi.toFixed(3)}</div>`+note(`Every ₹1 invested brings back ₹${pi.toFixed(2)} in today's money. NPV = ${L(pv-200)}.`)}}},
+ {id:'interp',name:'Finding IRR by interpolation',short:'16% + 4% × 13.52 ÷ 15.60',
+  def:'IRR by hand. Find NPV at a rate where it is positive (16%) and at a rate where it is negative (20%). Zero lies between them, so IRR lies between 16% and 20%. How far along? Compare the distance from each NPV to zero with the total distance.',
+  contrast:'Work from either side and you get the same answer: add from 16%, or subtract from 20%. It is an estimate because the true NPV line is slightly curved; the exact IRR is 19.44%. Keep the two trial rates close for a good estimate.',ctl:[],
+  draw(s,st){const k=K(),r1=.16,r2=.20,N1=npv(P,r1),N2=npv(P,r2),gap=N1-N2,est=r1+(r2-r1)*N1/gap,CX=[220,340,460,580],NX=690;
+   ['Today','Year 1','Year 2','Year 3'].forEach((t,i)=>T(s,CX[i],14,t,{bold:1,fill:k.ink,size:12}));T(s,NX,14,'NPV',{bold:1,fill:k.ink,size:12});
+   T(s,24,40,'Cash flows',{anchor:'start',bold:1,fill:k.ink,size:12});
+   P.forEach((v,i)=>{const pos=v>0;Rc(s,CX[i]-42,26,84,22,pos?k.aS:k.fa,{stroke:pos?k.a:k.l,rx:6});T(s,CX[i],41,L0(v),{mono:1,bold:1,size:12,fill:pos?k.a:k.ink})});
+   [[r1,N1,k.par,76],[r2,N2,k.d,108]].forEach(([r,N,col,y])=>{T(s,24,y,'At '+pc(r,0),{anchor:'start',bold:1,fill:col,size:12});
+    P.forEach((v,i)=>{T(s,CX[i],y,i?(v/Math.pow(1+r,i)).toFixed(2):'−200.00',{mono:1,size:12,fill:k.ink});if(i<3)T(s,(CX[i]+CX[i+1])/2,y,'+',{size:12})});
+    T(s,(CX[3]+NX)/2-6,y,'=',{size:12});T(s,NX,y,(N>=0?'+':'')+L(N),{mono:1,bold:1,size:13,fill:col})});
+   Ln(s,24,124,736,124,k.l,1);
+   const vmin=-5,vmax=16,x0=60,x1=700,X=v=>x0+(v-vmin)/(vmax-vmin)*(x1-x0),y=212;
+   T(s,24,146,'NPV on a number line',{anchor:'start',bold:1,fill:k.ink,size:12});
+   Ln(s,x0,y,x1,y,k.m,1.5);
+   for(let v=-4;v<=16;v+=4){Ln(s,X(v),y-4,X(v),y+4,k.m,1);if(v)T(s,X(v),y+18,v,{size:10})}
+   Ln(s,X(0),y-12,X(0),y+12,k.ink,2.5);T(s,X(0),y+20,'0',{bold:1,size:12,fill:k.ink});
+   T(s,x0,y-8,'negative',{anchor:'start',size:11,fill:k.d});T(s,x1,y-8,'positive',{anchor:'end',size:11,fill:k.par});
+   [[N2,k.d,'NPV at 20%'],[N1,k.par,'NPV at 16%']].forEach(([v,col,lab])=>{s.append(el('circle',{cx:X(v),cy:y,r:7,fill:col}));T(s,X(v),y-34,lab,{bold:1,size:12,fill:col});T(s,X(v),y-18,(v>=0?'+':'')+v.toFixed(2),{mono:1,bold:1,size:12,fill:col})});
+   const br=(a,b,yy,col,lab)=>{Ln(s,X(a),yy,X(b),yy,col,2);Ln(s,X(a),yy-6,X(a),yy+6,col,2);Ln(s,X(b),yy-6,X(b),yy+6,col,2);if(X(b)-X(a)<110){T(s,X(a)-10,yy+4,lab,{anchor:'end',mono:1,bold:1,size:12,fill:col});return}Rc(s,(X(a)+X(b))/2-44,yy-9,88,18,k.surf,{rx:3});T(s,(X(a)+X(b))/2,yy+4,lab,{mono:1,bold:1,size:12,fill:col})};
+   br(N2,0,252,k.d,Math.abs(N2).toFixed(2));br(0,N1,252,k.par,N1.toFixed(2));br(N2,N1,290,k.ink,'total '+gap.toFixed(2));
+   return {legend:[[k.par,'NPV at 16%: distance to zero'],[k.d,'NPV at 20%: distance to zero'],[k.ink,'Total distance']],
+    work:`<div>Total distance = ${N1.toFixed(2)} + ${Math.abs(N2).toFixed(2)} = <b>${gap.toFixed(2)}</b></div><div class="k">From 16%, add</div><div>IRR ≈ 16% + 4% × <span style="color:var(--par)">${N1.toFixed(2)}</span> ÷ ${gap.toFixed(2)}</div><div>= 16% + ${pc(est-r1)} = <span class="c">${pc(est)}</span></div><div class="k">Check from 20%, subtract</div><div>20% − 4% × <span style="color:var(--disc)">${Math.abs(N2).toFixed(2)}</span> ÷ ${gap.toFixed(2)} = ${pc(est)}</div><div class="big">IRR ≈ ${pc(est)}</div>`+note('4% is the gap between the two trial rates, 20% − 16%.')}}}
  ]};
 
 const STEPS=[S0,S1,S2,S3,S5];
