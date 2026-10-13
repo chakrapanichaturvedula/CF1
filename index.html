@@ -7,6 +7,9 @@
 <meta name="description" content="Interactive walkthroughs and activities for FIA 203 Corporate Finance-I, IMT Hyderabad.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<script src="assets/js/config.js"></script>
+<script src="assets/js/vendor/supabase-2.117.3.js"></script>
+<script src="assets/js/cf.js"></script>
 <style>
 /* Layout: course header, then one row per module in session order; each row lists its walkthroughs and activities as cards. */
 :root{
@@ -59,7 +62,7 @@ a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <header>
     <p class="eyebrow">IMT Hyderabad · PGDM · Term II</p>
     <h1>FIA 203 Corporate Finance</h1>
-    <p class="lede">Interactive walkthroughs and activities for each topic in the course. Open any page, move the sliders, and see the numbers change. No login needed.</p>
+    <p class="lede">Interactive walkthroughs and activities for each topic in the course. Open any page, move the sliders, and see the numbers change. Enter your student ID the first time you open a page.</p>
     <a class="bigpic" href="big-picture.html"><span class="bp-k">Start with</span><b>The Big Picture</b><span class="bp-s">How every topic in the course connects, from the balance sheet to WACC →</span></a>
     <div class="meta"><span><b>Text</b> Ross, Westerfield, Jaffe and Kakani, Corporate Finance</span></div>
   </header>
@@ -82,22 +85,22 @@ a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <section class="module" aria-labelledby="m3">
     <div class="mhead"><span class="num">Module 3</span><h2 id="m3">Capital Budgeting</h2><p>Investment rules and the analysis of project cash flows.</p></div>
     <div class="cards">
-      <div class="card soon"><span class="kind w">Walkthrough</span><h3>Capital Budgeting</h3><p>Coming soon.</p></div>
-      <div class="card soon"><span class="kind w">Walkthrough</span><h3>Project Cash Flows</h3><p>Coming soon.</p></div>
+      <a class="card" href="capital-budgeting.html"><span class="kind w">Walkthrough</span><h3>Capital Budgeting</h3><p>A map of the methods, then NPV, payback, IRR and PI, and a merits and demerits summary.</p></a>
+      <a class="card" href="project-cash-flows.html"><span class="kind w">Walkthrough</span><h3>Project Cash Flows</h3><p>What counts, building the cash-flow table row by row, and a cost-saving project.</p></a>
     </div>
   </section>
 
   <section class="module" aria-labelledby="m4">
     <div class="mhead"><span class="num">Module 4</span><h2 id="m4">Risk and Return</h2><p>Single securities, portfolios, CML and CAPM.</p></div>
     <div class="cards">
-      <div class="card soon"><span class="kind w">Walkthrough</span><h3>Risk and Return</h3><p>Coming soon.</p></div>
+      <a class="card" href="risk-and-return.html"><span class="kind w">Walkthrough</span><h3>Risk and Return</h3><p>Mean and standard deviation, the risk–return picture, two and many risky assets, beta and the SML.</p></a>
     </div>
   </section>
 
   <section class="module" aria-labelledby="m5">
     <div class="mhead"><span class="num">Module 5</span><h2 id="m5">Cost of Capital</h2><p>Cost of equity, cost of debt and WACC.</p></div>
     <div class="cards">
-      <div class="card soon"><span class="kind w">Walkthrough</span><h3>Cost of Capital</h3><p>Coming soon.</p></div>
+      <a class="card" href="cost-of-capital.html"><span class="kind w">Walkthrough</span><h3>Cost of Capital</h3><p>Cost of equity, cost of debt, WACC, and when to use it as the hurdle rate.</p></a>
     </div>
   </section>
 

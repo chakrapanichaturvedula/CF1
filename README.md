@@ -1,18 +1,17 @@
 # FIA 203 Corporate Finance
 
 Interactive walkthroughs and activities for FIA 203 Corporate Finance-I, IMT Hyderabad.
-Open `index.html` for the list of topics. Every page is a single, self-contained HTML file with no login and no build step.
+Open `index.html` for the list of topics. Every page is a single HTML file with no build step. Students enter their ID once per browser.
 
 | Module | Page | File |
 |---|---|---|
 | Start here | The Big Picture | `big-picture.html` |
 | 1. Time Value of Money | Activity: Reading Cash Flows | `tvm-reading-cash-flows.html` |
-| 2. Bond and Stock Valuation | Walkthrough: Bond Valuation | `bond-valuation.html` |
-| 2. Bond and Stock Valuation | Walkthrough: Stock Valuation | `stock-valuation.html` |
-| 3. Capital Budgeting | Coming soon | |
-| 4. Risk and Return | Coming soon | |
-| 5. Cost of Capital | Coming soon | |
+| 2. Bond and Stock Valuation | Bond Valuation, Stock Valuation | `bond-valuation.html`, `stock-valuation.html` |
+| 3. Capital Budgeting | Capital Budgeting, Project Cash Flows | `capital-budgeting.html`, `project-cash-flows.html` |
+| 4. Risk and Return | Risk and Return | `risk-and-return.html` |
+| 5. Cost of Capital | Cost of Capital | `cost-of-capital.html` |
 
-Pages for Modules 3 to 5 are reviewed in the TesCF1 repository first and copied here when released.
+Which topics students can open is controlled from `admin.html` (instructor in charge only). Instructors see their own sections at `faculty.html`. Student progress is stored in Supabase; the schema is in `database/schema.sql`. `assets/js/config.js` holds only the public project URL and publishable key. Never add the secret key to this repository.
 
 To publish with GitHub Pages: Settings → Pages → Source: "Deploy from a branch" → Branch: `main`, folder `/ (root)`.
